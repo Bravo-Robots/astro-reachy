@@ -3,126 +3,179 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width,initial-scale=1" />
-    <title>Astro Reachy · Cabina de misión</title>
+    <meta name="theme-color" content="#050816" />
+    <title>Astro Reachy · Mission Control</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=DM+Mono&family=Outfit:wght@400;500;600;700;800&display=swap"
+      rel="stylesheet"
+    />
     <link rel="stylesheet" href="style.css" />
   </head>
   <body>
-    <div class="stars"></div>
-    <main>
+    <div class="space" aria-hidden="true"><i></i><b></b></div>
+    <main id="app">
       <header>
-        <a class="brand">
-          <img
+        <a class="brand" href="#inicio"
+          ><img
             src="assets/visuals/astro-reachy-logo-real-mini.png"
-            alt="Logo Astro Reachy: Reachy Mini y un planeta"
-          />
-          <span>ASTRO REACHY</span>
-        </a>
-        <span class="online">● REACHY MINI CONECTADO</span><button>◖◗</button>
+            alt=""
+          /><span
+            ><strong>ASTRO</strong> REACHY<small
+              >MISSION CONTROL // SOLAR SYSTEM</small
+            ></span
+          ></a
+        >
+        <div class="connected"><i></i>REACHY MINI <b>CONECTADO</b></div>
+        <button aria-label="Ambiente sonoro">◌</button>
       </header>
-      <section class="hero">
+      <section class="hero" id="inicio">
         <div class="copy">
-          <p class="eyebrow">MISIÓN 01 · SISTEMA SOLAR</p>
-          <h1>Tu cabina<br /><em>interplanetaria.</em></h1>
+          <p class="tag">MISIÓN ACTIVA <i></i> EXPLORACIÓN PLANETARIA</p>
+          <h1>Explora el Sistema Solar<br /><em>junto a Reachy Mini.</em></h1>
           <p>
-            Enseña una tarjeta a Reachy y empieza una misión llena de
-            descubrimientos, datos curiosos y aventuras cósmicas.
+            Una misión interactiva de astronomía: enseña una tarjeta QR y deja
+            que tu guía espacial transforme cada planeta en una historia.
           </p>
-          <nav>
-            <a class="cta" href="#catalogo">Explorar tarjetas →</a
-            ><a href="#como">¿Cómo funciona?</a>
-          </nav>
-          <div class="stats">
-            <span><b>10</b>astros</span><span><b>12</b>tarjetas QR</span
-            ><span><b>∞</b>curiosidad</span>
+          <a href="#explorador">ENTRAR AL EXPLORADOR <b>↓</b></a>
+        </div>
+        <div class="solar" aria-label="Sistema Solar animado">
+          <i class="orbit o1"></i><i class="orbit o2"></i
+          ><i class="orbit o3"></i><i class="orbit o4"></i><b class="sun"></b
+          ><b class="p mercury"></b><b class="p venus"></b
+          ><b class="p earth"></b><b class="p mars"></b><b class="p jupiter"></b
+          ><b class="p saturn"></b
+          ><small><i></i> SISTEMA SOLAR // VISTA DE MISIÓN</small>
+        </div>
+      </section>
+      <section class="console">
+        <article class="panel scan-panel">
+          <p class="label"><b>01</b> SISTEMA DE RECONOCIMIENTO PLANETARIO</p>
+          <div class="scanner"><i></i><b>QR</b></div>
+          <div class="readout">
+            <i></i><span id="scan-status">ESPERANDO SEÑAL...</span
+            ><small id="scan-detail">CÁMARA ÓPTICA // ONLINE</small>
           </div>
-        </div>
-        <div class="stage">
-          <i class="orbit one"></i><i class="orbit two"></i>
-          <div class="earth"><i></i><i></i><b></b></div>
-          <small>● PLANETA DESTACADO&nbsp; <strong>TIERRA</strong></small>
-        </div>
+          <button class="demo" id="demo-scan">SIMULAR ADQUISICIÓN</button>
+        </article>
+        <article class="panel guide">
+          <p class="label"><b>02</b> REACHY // GUÍA DE MISIÓN</p>
+          <div class="guide-body">
+            <i class="guide-orbit"></i
+            ><img
+              src="assets/visuals/reachy-mini-official.png"
+              alt="Reachy Mini, guía de misión"
+            />
+            <div>
+              <p><i></i><span id="guide-status">ESPERANDO TARJETA</span></p>
+              <blockquote id="guide-quote">
+                “Enséñame un planeta para comenzar nuestra misión.”
+              </blockquote>
+            </div>
+          </div>
+          <footer class="steps">
+            <b>● ESPERA</b><span>ANÁLISIS</span><span>EXPLICACIÓN</span>
+          </footer>
+        </article>
       </section>
-      <section class="scanner" id="como">
-        <div class="scan">⌁</div>
-        <div>
-          <p class="eyebrow">LECTOR LISTO</p>
-          <h2>Muéstrale una tarjeta a Reachy</h2>
-          <p>
-            Reachy reconoce el QR, presenta el planeta con gestos y te invita a
-            descubrir más.
+      <section class="target" id="ficha" aria-live="polite">
+        <div class="target-title">
+          <p class="tag">
+            OBJETIVO IDENTIFICADO <i></i> <span id="code">SATURNO_001</span>
           </p>
+          <h2 id="name">SATURNO</h2>
+          <p id="kind">GIGANTE GASEOSO // SEXTO PLANETA</p>
         </div>
-        <aside>● ESCANEANDO<br /><small>Esperando una misión</small></aside>
-      </section>
-      <section id="catalogo">
-        <div class="title">
+        <dl class="facts left">
           <div>
-            <p class="eyebrow">CATÁLOGO DE MISIÓN</p>
-            <h2>Elige tu próximo destino</h2>
+            <dt>DISTANCIA AL SOL</dt>
+            <dd id="distance">1.432 M KM</dd>
+          </div>
+          <div>
+            <dt>DIÁMETRO</dt>
+            <dd id="diameter">116.460 KM</dd>
+          </div>
+          <div>
+            <dt>DURACIÓN DEL DÍA</dt>
+            <dd id="day">10,7 HORAS</dd>
+          </div>
+          <div>
+            <dt>GRAVEDAD</dt>
+            <dd id="gravity">1,07 G</dd>
+          </div>
+        </dl>
+        <div class="portrait">
+          <div id="planet-visual" class="planet-visual saturn"></div>
+        </div>
+        <dl class="facts right">
+          <div>
+            <dt>DURACIÓN DEL AÑO</dt>
+            <dd id="year">29,45 AÑOS</dd>
+          </div>
+          <div>
+            <dt>TEMPERATURA</dt>
+            <dd id="temp">−140 °C</dd>
+          </div>
+          <div>
+            <dt>LUNAS</dt>
+            <dd id="moons">146</dd>
+          </div>
+          <div>
+            <dt>ATMÓSFERA</dt>
+            <dd id="atmosphere">HIDRÓGENO + HELIO</dd>
+          </div>
+        </dl>
+        <div class="story">
+          <p class="tag">REACHY TE CUENTA</p>
+          <p id="story">
+            “¡Has encontrado Saturno, el planeta de los anillos! Sus famosos
+            anillos están formados por incontables fragmentos de hielo, roca y
+            polvo.”
+          </p>
+          <small>TRANSMISIÓN EN CURSO <i></i><i></i><i></i><i></i></small>
+        </div>
+      </section>
+      <section class="explorer" id="explorador">
+        <div class="explorer-head">
+          <div>
+            <p class="tag">ARCHIVO DE MISIÓN // OBJETOS DISPONIBLES</p>
+            <h2>Explorador del<br /><em>Sistema Solar.</em></h2>
           </div>
           <p>
-            Imprime las tarjetas, enseña una a la cámara y déjate llevar por el
-            viaje.
+            El flujo principal siempre es la tarjeta QR. Selecciona un astro
+            para previsualizar su ficha de misión.
           </p>
         </div>
-        <div class="grid">
-          <article class="mercurio">
-            <b>01</b><i></i>
-            <h3>Mercurio</h3>
-            <p>El veloz mensajero</p>
-          </article>
-          <article class="venus">
-            <b>02</b><i></i>
-            <h3>Venus</h3>
-            <p>El mundo brillante</p>
-          </article>
-          <article class="tierra">
-            <b>03</b><i></i>
-            <h3>Tierra</h3>
-            <p>Nuestro hogar azul</p>
-          </article>
-          <article class="marte">
-            <b>04</b><i></i>
-            <h3>Marte</h3>
-            <p>El planeta rojo</p>
-          </article>
-          <article class="jupiter">
-            <b>05</b><i></i>
-            <h3>Júpiter</h3>
-            <p>El gran gigante</p>
-          </article>
-          <article class="saturno">
-            <b>06</b><i></i>
-            <h3>Saturno</h3>
-            <p>El señor de los anillos</p>
-          </article>
-          <article class="urano">
-            <b>07</b><i></i>
-            <h3>Urano</h3>
-            <p>El planeta inclinado</p>
-          </article>
-          <article class="neptuno">
-            <b>08</b><i></i>
-            <h3>Neptuno</h3>
-            <p>El azul profundo</p>
-          </article>
-        </div>
+        <nav class="objects" aria-label="Explorador de planetas">
+          <button data-planet="sun" class="sun-object">
+            <i></i><b>SOL</b><small>ESTRELLA</small></button
+          ><button data-planet="mercury" class="mercury-object">
+            <i></i><b>MERCURIO</b><small>88 DÍAS / AÑO</small></button
+          ><button data-planet="venus" class="venus-object">
+            <i></i><b>VENUS</b><small>EL MÁS CALIENTE</small></button
+          ><button data-planet="earth" class="earth-object">
+            <i></i><b>TIERRA</b><small>NUESTRO HOGAR</small></button
+          ><button data-planet="moon" class="moon-object">
+            <i></i><b>LUNA</b><small>SATÉLITE</small></button
+          ><button data-planet="mars" class="mars-object">
+            <i></i><b>MARTE</b><small>PLANETA ROJO</small></button
+          ><button data-planet="jupiter" class="jupiter-object">
+            <i></i><b>JÚPITER</b><small>GRAN GIGANTE</small></button
+          ><button data-planet="saturn" class="saturn-object selected">
+            <i></i><b>SATURNO</b><small>146 LUNAS</small></button
+          ><button data-planet="uranus" class="uranus-object">
+            <i></i><b>URANO</b><small>GIGANTE HELADO</small></button
+          ><button data-planet="neptune" class="neptune-object">
+            <i></i><b>NEPTUNO</b><small>AZUL PROFUNDO</small>
+          </button>
+        </nav>
       </section>
-      <section class="tip">
-        <b>01</b>
-        <div>
-          <p class="eyebrow">CONSEJO DE ASTRONAUTA</p>
-          <h2>
-            Cuando Reachy pregunte, enseña <em>MÁS</em> para descubrir secretos
-            del planeta.
-          </h2>
-        </div>
-        <a href="#catalogo">Ver colección →</a>
-      </section>
-      <footer>
-        ASTRO REACHY · APRENDE MIRANDO AL CIELO
-        <span>HECHO PARA REACHY MINI</span>
+      <footer class="page-footer">
+        <span>ASTRO REACHY <i></i> EDUCACIÓN PLANETARIA</span
+        ><span>DISEÑADO PARA REACHY MINI</span>
       </footer>
     </main>
+    <script src="main.js"></script>
   </body>
 </html>
