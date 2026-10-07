@@ -1,0 +1,11 @@
+# Python-generated files
+__pycache__/
+*.py[cod]
+*.egg-info/
+build/
+.cache/
+
+# Local runtime database and editor files
+*.sqlite3
+.DS_Store
+Thumbs.db

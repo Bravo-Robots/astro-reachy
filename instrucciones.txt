@@ -1,0 +1,1277 @@
+# PROYECTO: REACHY MINI — SISTEMA SOLAR INTERACTIVO
+
+Quiero desarrollar desde cero una aplicación educativa completa para **Reachy Mini** llamada:
+
+# Sistema Solar
+
+El objetivo es crear una aplicación instalable como **Reachy Mini App**, siguiendo el mismo concepto de instalación e integración que utilizamos anteriormente con la aplicación Lexia.
+
+La aplicación será sencilla, robusta y completamente determinista.
+
+NO utilizar:
+
+- LLM.
+- OpenAI.
+- Gemini.
+- Claude.
+- ElevenLabs.
+- modelos locales.
+- reconocimiento de voz.
+- RAG.
+- generación mediante IA.
+- servicios cloud innecesarios.
+
+Para la voz quiero utilizar **DaveFX**.
+
+Antes de implementar el TTS, comprueba exactamente cómo está disponible DaveFX en nuestro entorno y cómo debe integrarse con Reachy Mini. No inventes APIs ni métodos.
+
+---
+
+# 1. OBJETIVO
+
+Vamos a crear tarjetas físicas educativas sobre el Sistema Solar.
+
+Cada tarjeta tendrá:
+
+- imagen/nombre del astro;
+- código QR único.
+
+Reachy Mini utilizará sus cámaras para detectar el QR.
+
+Flujo:
+
+TARJETA FÍSICA
+↓
+CÁMARA REACHY MINI
+↓
+DETECCIÓN QR
+↓
+IDENTIFICADOR
+↓
+BASE DE DATOS
+↓
+DATOS DEL ASTRO
+↓
+DAVEFX / VOZ
++
+GESTOS Y MOVIMIENTOS DE REACHY
+
+Ejemplo:
+
+El usuario enseña una tarjeta de Saturno.
+
+La cámara detecta:
+
+SATURNO_001
+
+La aplicación consulta la base de datos.
+
+Identifica Saturno.
+
+Reachy realiza un gesto de reconocimiento.
+
+Dice:
+
+"¡Has encontrado Saturno!"
+
+Mientras explica Saturno debe realizar diferentes movimientos de:
+
+- cabeza;
+- cuerpo;
+- antenas.
+
+Al terminar dice algo similar a:
+
+"¡Muy bien! Enséñame otra tarjeta para continuar nuestro viaje por el Sistema Solar."
+
+Reachy vuelve al modo de espera.
+
+---
+
+# 2. OBJETOS INICIALES
+
+Crear inicialmente:
+
+SOL
+MERCURIO
+VENUS
+TIERRA
+LUNA
+MARTE
+JUPITER
+SATURNO
+URANO
+NEPTUNO
+
+Diseñar el sistema para poder añadir posteriormente:
+
+- Plutón;
+- Ceres;
+- Eris;
+- asteroides;
+- cometas;
+- satélites;
+- cinturón de asteroides;
+- cinturón de Kuiper;
+- otros objetos astronómicos.
+
+Añadir un nuevo objeto NO debe requerir modificar la lógica principal.
+
+---
+
+# 3. IDENTIFICADORES QR
+
+Los códigos QR solamente contendrán identificadores.
+
+Utilizar:
+
+SOL_001
+MERCURIO_001
+VENUS_001
+TIERRA_001
+LUNA_001
+MARTE_001
+JUPITER_001
+SATURNO_001
+URANO_001
+NEPTUNO_001
+
+NO introducir toda la información del planeta dentro del QR.
+
+Arquitectura:
+
+QR
+↓
+qr_id
+↓
+base de datos
+↓
+astro
+
+---
+
+# 4. CÁMARA DE REACHY MINI
+
+Utilizar las cámaras reales de Reachy Mini.
+
+Antes de implementar:
+
+1. inspecciona el SDK instalado;
+2. identifica la versión;
+3. comprueba la documentación/código disponible;
+4. determina la forma oficial de acceder a la cámara;
+5. no inventes métodos.
+
+Utilizar una solución ligera para detectar QR.
+
+Preferiblemente OpenCV si es compatible con el entorno.
+
+La aplicación debe funcionar correctamente sobre la Raspberry Pi integrada.
+
+No procesar imágenes a resoluciones o frecuencias innecesariamente altas.
+
+La prioridad es:
+
+fiabilidad + baja carga de CPU + detección rápida.
+
+---
+
+# 5. BASE DE DATOS
+
+Utilizar una base de datos local sencilla.
+
+Preferiblemente:
+
+SQLite
+
+si no existe una razón técnica para utilizar otra solución.
+
+La base de datos debe separar completamente:
+
+DATOS
+de
+LÓGICA DE LA APLICACIÓN.
+
+---
+
+# 6. INFORMACIÓN DE CADA ASTRO
+
+Quiero bastante información de cada planeta/astro.
+
+Cada objeto debe poder contener, cuando sea aplicable:
+
+## Identificación
+
+- id
+- qr_id
+- nombre
+- tipo
+- descripción general
+
+## Posición y órbita
+
+- posición respecto al Sol
+- distancia media al Sol
+- distancia mínima
+- distancia máxima
+- duración del año
+- velocidad orbital
+- inclinación orbital
+
+## Tamaño
+
+- diámetro
+- radio
+- masa
+- volumen
+- comparación de tamaño con la Tierra
+
+## Rotación
+
+- duración del día
+- velocidad de rotación
+- inclinación del eje
+
+## Gravedad
+
+- gravedad superficial
+- comparación con la gravedad terrestre
+
+## Temperatura
+
+- temperatura media
+- temperatura mínima
+- temperatura máxima
+
+## Atmósfera
+
+- existencia de atmósfera
+- composición atmosférica
+- presión atmosférica
+
+## Composición
+
+- composición general
+- estructura interna
+- núcleo
+- manto
+- corteza cuando corresponda
+
+## Superficie
+
+- características principales
+- montañas
+- volcanes
+- cráteres
+- tormentas
+- océanos/hielo cuando corresponda
+
+## Satélites
+
+- número de lunas
+- principales lunas
+- características destacadas
+
+## Anillos
+
+- existencia de anillos
+- composición
+- características
+
+## Magnetismo
+
+- campo magnético
+- magnetosfera
+
+## Historia
+
+- origen del nombre
+- descubrimiento
+- observaciones históricas importantes
+
+## Exploración espacial
+
+- principales misiones
+- sondas
+- rovers
+- descubrimientos importantes
+
+## Agua
+
+- presencia conocida o posible de agua
+- hielo
+- evidencias históricas
+
+## Vida
+
+Cuando tenga sentido:
+
+- condiciones para la vida
+- investigaciones realizadas
+- evidencias científicas
+
+No realizar afirmaciones especulativas como hechos.
+
+## Curiosidades
+
+Guardar al menos:
+
+- curiosidad 1
+- curiosidad 2
+- curiosidad 3
+- curiosidad 4
+- curiosidad 5
+
+Los datos científicos deben ser correctos.
+
+NO inventar valores para completar campos.
+
+Si un dato no aplica:
+
+NULL
+
+---
+
+# 7. NO LEER LA BASE DE DATOS COMO UNA TABLA
+
+Reachy NO debe decir:
+
+"Diámetro 6.779 kilómetros. Masa X. Gravedad X."
+
+Debe realizar una explicación natural.
+
+La información se organizará en bloques narrativos.
+
+Por ejemplo para Marte:
+
+INTRO
+
+"¡Has encontrado Marte! El famoso planeta rojo."
+
+GENERAL
+
+"Marte es el cuarto planeta del Sistema Solar y se encuentra a una distancia media de aproximadamente 228 millones de kilómetros del Sol."
+
+TAMAÑO
+
+"Marte es bastante más pequeño que la Tierra. Su diámetro es de aproximadamente 6.779 kilómetros."
+
+DÍA
+
+"Un día en Marte dura aproximadamente 24 horas y 39 minutos, sorprendentemente parecido a un día terrestre."
+
+AÑO
+
+"Sin embargo, un año marciano es bastante más largo: dura unos 687 días terrestres."
+
+GRAVEDAD
+
+"En Marte pesarías mucho menos. Su gravedad es aproximadamente un 38 por ciento de la terrestre."
+
+LUNAS
+
+"Marte tiene dos pequeñas lunas llamadas Fobos y Deimos."
+
+SUPERFICIE
+
+"Su superficie contiene enormes volcanes, cráteres y gigantescos cañones."
+
+CURIOSIDAD
+
+"En Marte se encuentra Olympus Mons, el volcán más grande conocido del Sistema Solar."
+
+EXPLORACIÓN
+
+"Numerosas sondas y robots han explorado Marte buscando pistas sobre su pasado."
+
+FINAL
+
+"¡Ya conocemos mucho mejor Marte! Enséñame otra tarjeta para continuar nuestro viaje."
+
+---
+
+# 8. DURACIÓN DE LAS EXPLICACIONES
+
+No quiero explicaciones excesivamente cortas.
+
+Cada planeta debe tener suficiente información para resultar educativo.
+
+Objetivo aproximado:
+
+45-90 segundos por objeto.
+
+Dividir la narración en bloques pequeños.
+
+NO generar un único texto gigantesco.
+
+Esto permitirá introducir diferentes movimientos entre bloques.
+
+---
+
+# 9. VOZ — DAVEFX
+
+Utilizar **DaveFX** como sistema de voz.
+
+NO utilizar ElevenLabs.
+
+NO utilizar APIs cloud salvo que DaveFX requiera explícitamente algún componente concreto.
+
+Antes de implementar:
+
+1. comprobar cómo tenemos disponible DaveFX;
+2. identificar cómo se invoca;
+3. comprobar si puede utilizarse directamente desde Python;
+4. comprobar formato de audio;
+5. comprobar compatibilidad con Raspberry Pi/Reachy Mini;
+6. comprobar pronunciación española;
+7. realizar una prueba sencilla.
+
+Primera prueba:
+
+"Hola. Soy Reachy. Hoy vamos a explorar juntos el Sistema Solar."
+
+Verificar que la voz se escucha correctamente a través del sistema de audio de Reachy.
+
+No continuar con la integración completa hasta superar esta prueba.
+
+---
+
+# 10. MOVIMIENTOS Y GESTOS
+
+ESTA PARTE ES MUY IMPORTANTE.
+
+Reachy debe resultar expresivo.
+
+No quiero un robot completamente inmóvil reproduciendo audio.
+
+Debe utilizar:
+
+- cabeza;
+- cuerpo;
+- antena izquierda;
+- antena derecha;
+- orientación/mirada cuando sea posible.
+
+PRIORIDAD:
+
+Utilizar gestos, poses, emociones, movimientos y animaciones PREDETERMINADAS proporcionadas por Reachy Mini.
+
+Antes de crear movimientos manuales:
+
+INSPECCIONAR EL SDK.
+
+Buscar qué movimientos oficiales existen.
+
+No asumir nombres como:
+
+happy
+sad
+curious
+excited
+surprised
+thinking
+
+hasta comprobar que realmente existen.
+
+---
+
+# 11. SEGURIDAD DE MOVIMIENTO
+
+NO enviar valores arbitrarios directamente a motores.
+
+NO realizar movimientos bruscos.
+
+NO superar límites físicos.
+
+NO experimentar directamente sobre hardware con movimientos desconocidos.
+
+Priorizar siempre:
+
+API oficial
++
+movimientos predeterminados
++
+límites oficiales.
+
+---
+
+# 12. EXPRESIVIDAD
+
+Cada bloque narrativo puede tener asociado un gesto.
+
+Conceptualmente:
+
+INTRO
+→ gesto alegre
+
+GENERAL
+→ movimiento suave
+
+TAMAÑO
+→ gesto explicativo
+
+ÓRBITA
+→ movimiento lateral
+
+LUNAS
+→ antenas
+
+CURIOSIDAD
+→ sorpresa
+
+FINAL
+→ gesto alegre
+
+Los nombres definitivos dependerán de los movimientos realmente disponibles en Reachy Mini.
+
+---
+
+# 13. MOVIMIENTO DURANTE LA VOZ
+
+Cuando técnicamente sea posible quiero:
+
+VOZ + MOVIMIENTO SIMULTÁNEO.
+
+No quiero una secuencia constantemente:
+
+hablar
+→ parar
+→ mover
+→ parar
+→ hablar.
+
+Debe sentirse natural.
+
+Ejemplo:
+
+Reachy comienza:
+
+"Saturno es famoso por sus enormes anillos..."
+
+Mientras habla:
+
+→ mueve lentamente la cabeza;
+→ mueve las antenas;
+→ vuelve suavemente al centro.
+
+Investigar la forma segura de ejecutar movimiento y audio concurrentemente.
+
+---
+
+# 14. PERSONALIDAD DE CADA PLANETA
+
+Podemos utilizar diferentes secuencias de movimientos según el objeto.
+
+Ejemplos conceptuales:
+
+SOL
+→ movimientos energéticos.
+
+MERCURIO
+→ movimientos algo más rápidos.
+
+VENUS
+→ movimientos suaves.
+
+TIERRA
+→ movimientos amigables.
+
+MARTE
+→ movimientos curiosos/exploradores.
+
+JÚPITER
+→ movimientos amplios.
+
+SATURNO
+→ movimientos suaves/elegantes.
+
+URANO
+→ movimientos curiosos.
+
+NEPTUNO
+→ movimientos tranquilos.
+
+No crear movimientos peligrosos ni exagerados.
+
+---
+
+# 15. DETECCIÓN REPETIDA
+
+Implementar protección para evitar repetir constantemente una tarjeta.
+
+Ejemplo:
+
+SATURNO_001 detectado.
+
+↓
+
+Bloquear nuevas detecciones.
+
+↓
+
+Realizar explicación.
+
+↓
+
+Esperar a que SATURNO_001 desaparezca de la cámara.
+
+↓
+
+Volver a SCANNING.
+
+Si el usuario mantiene Saturno delante de la cámara:
+
+NO repetir continuamente la explicación.
+
+---
+
+# 16. NUEVA TARJETA
+
+Después de terminar:
+
+Reachy:
+
+"¡Enséñame otra tarjeta!"
+
+El usuario retira Saturno.
+
+Muestra Júpiter.
+
+Debe funcionar inmediatamente sin reiniciar la aplicación.
+
+---
+
+# 17. MÁQUINA DE ESTADOS
+
+Mantenerla sencilla.
+
+BOOT
+↓
+IDLE
+↓
+SCANNING
+↓
+QR_DETECTED
+↓
+LOADING
+↓
+PRESENTING
+↓
+WAIT_CARD_REMOVAL
+↓
+SCANNING
+
+En caso de error:
+
+ERROR
+↓
+RECOVERY
+↓
+SCANNING
+
+cuando sea posible.
+
+---
+
+# 18. LOGS
+
+Añadir logs útiles.
+
+Ejemplo:
+
+[APP] Sistema Solar iniciado
+
+[CAMERA] Cámara disponible
+
+[STATE] SCANNING
+
+[QR] Detectado: JUPITER_001
+
+[DATABASE] Encontrado: Júpiter
+
+[PRESENTATION] Iniciando Júpiter
+
+[VOICE] Reproduciendo intro
+
+[MOTION] Ejecutando gesto
+
+[VOICE] Reproduciendo bloque: tamaño
+
+[MOTION] Ejecutando movimiento
+
+[PRESENTATION] Finalizada
+
+[STATE] WAIT_CARD_REMOVAL
+
+[QR] Tarjeta retirada
+
+[STATE] SCANNING
+
+---
+
+# 19. MANEJO DE ERRORES
+
+La aplicación no debe cerrarse porque:
+
+- QR ilegible;
+- QR desconocido;
+- cámara pierde un frame;
+- no encuentra temporalmente la cámara;
+- falla una reproducción de voz;
+- falla un gesto;
+- falta algún dato;
+- aparece una tarjeta desconocida.
+
+Registrar error y continuar cuando sea posible.
+
+---
+
+# 20. ESTRUCTURA ORIENTATIVA
+
+NO crear una arquitectura innecesariamente grande.
+
+Podría ser:
+
+reachy_sistema_solar/
+
+    app/
+        main.py
+
+    camera/
+        camera_manager.py
+        qr_detector.py
+
+    database/
+        database.py
+        solar_system.db
+        seed_database.py
+
+    robot/
+        reachy_controller.py
+        voice.py
+        gestures.py
+
+    presentation/
+        presenter.py
+
+    core/
+        state_machine.py
+        config.py
+
+    data/
+        solar_system.json
+
+    tests/
+
+    scripts/
+
+    assets/
+
+    README.md
+
+    pyproject.toml
+
+Pero primero comprobar cómo deben estructurarse realmente las Reachy Mini Apps.
+
+Adaptar la estructura a los requisitos oficiales.
+
+---
+
+# 21. OBJETIVO FINAL: MINI REACHY APPS
+
+ESTE REQUISITO ES FUNDAMENTAL.
+
+No quiero simplemente:
+
+python main.py
+
+Quiero una aplicación instalada correctamente dentro del ecosistema de Reachy Mini.
+
+Debe aparecer como:
+
+# Sistema Solar
+
+dentro de Mini Reachy Apps / Dashboard.
+
+Debe poder:
+
+- instalarse;
+- iniciarse;
+- detenerse;
+- acceder a cámaras;
+- reproducir voz;
+- controlar movimientos;
+- acceder a SQLite;
+- liberar cámara/recursos al cerrarse.
+
+Utilizar como referencia el proyecto anterior de **Lexia** si está disponible en el equipo.
+
+---
+
+# 22. RASPBERRY PI
+
+El objetivo principal es Reachy Mini con su Raspberry Pi integrada.
+
+Optimizar para este hardware.
+
+NO introducir:
+
+- modelos IA;
+- servidores innecesarios;
+- Docker salvo necesidad real;
+- dependencias pesadas;
+- procesos innecesarios.
+
+Queremos:
+
+QR + SQLite + DaveFX + Reachy SDK.
+
+---
+
+# 23. PRUEBAS SIN ROBOT
+
+Siempre que sea posible separar:
+
+lógica
+de
+hardware.
+
+Debe poder probarse:
+
+QR → BD → presentación
+
+sin tener necesariamente el robot conectado.
+
+Crear mocks/adaptadores sencillos cuando sea útil.
+
+Pero no sobrearquitecturar el proyecto.
+
+---
+
+# 24. DESARROLLO POR FASES
+
+MUY IMPORTANTE:
+
+NO HACER TODO EL PROYECTO DE GOLPE.
+
+Trabajar fase por fase.
+
+Al finalizar cada fase:
+
+1. ejecutar pruebas;
+2. comprobar resultado;
+3. corregir errores;
+4. mostrarme qué funciona;
+5. indicar qué archivos se han creado/modificado;
+6. proporcionar comandos de prueba;
+7. esperar mi autorización antes de avanzar.
+
+---
+
+# FASE 0 — INSPECCIÓN
+
+Antes de tocar nada:
+
+- inspeccionar sistema operativo;
+- Python;
+- entorno virtual;
+- Reachy SDK;
+- Reachy Mini;
+- estructura de Mini Reachy Apps;
+- proyecto Lexia si existe;
+- cámaras;
+- audio;
+- DaveFX;
+- gestos/movimientos disponibles.
+
+ENTREGABLE:
+
+Informe corto indicando exactamente qué tenemos y qué arquitectura vamos a utilizar.
+
+NO programar todavía la aplicación.
+
+---
+
+# FASE 1 — APP MÍNIMA
+
+Crear la estructura mínima necesaria para una Reachy Mini App.
+
+Objetivo:
+
+conseguir que aparezca:
+
+"Sistema Solar"
+
+en Mini Reachy Apps/Dashboard.
+
+La aplicación todavía no necesita QR.
+
+Comprobar:
+
+INICIAR
+→ FUNCIONA
+→ DETENER
+→ LIBERA RECURSOS.
+
+---
+
+# FASE 2 — CONEXIÓN CON REACHY
+
+Crear controlador básico.
+
+Comprobar:
+
+- conexión;
+- estado;
+- inicialización;
+- cierre.
+
+No mover todavía el robot de manera compleja.
+
+---
+
+# FASE 3 — VOZ DAVEFX
+
+Integrar DaveFX.
+
+Primera frase:
+
+"Hola. Soy Reachy. Hoy vamos a explorar juntos el Sistema Solar."
+
+Debe escucharse correctamente.
+
+Comprobar especialmente la calidad del español.
+
+---
+
+# FASE 4 — GESTOS
+
+Investigar y probar los movimientos predeterminados disponibles.
+
+Crear una tabla/listado:
+
+GESTO REAL
+FUNCIÓN
+DURACIÓN
+PARTES DEL ROBOT
+USO PROPUESTO
+
+Probar únicamente movimientos seguros.
+
+Seleccionar posteriormente un conjunto pequeño de gestos reutilizables.
+
+---
+
+# FASE 5 — VOZ + MOVIMIENTO
+
+Combinar DaveFX con movimientos.
+
+Objetivo:
+
+Reachy habla mientras realiza movimientos suaves.
+
+Crear una pequeña demostración:
+
+"¡Hola! Bienvenido al Sistema Solar."
+
++
+
+gesto de bienvenida.
+
+---
+
+# FASE 6 — CÁMARA
+
+Acceder a la cámara real.
+
+Mostrar/verificar frames.
+
+No implementar todavía toda la aplicación.
+
+Comprobar estabilidad.
+
+---
+
+# FASE 7 — QR
+
+Implementar detector.
+
+Crear primero un QR:
+
+TIERRA_001
+
+Mostrarlo delante de Reachy.
+
+Resultado esperado:
+
+[QR] TIERRA_001
+
+Todavía no ejecutar explicación.
+
+---
+
+# FASE 8 — BASE DE DATOS
+
+Crear SQLite.
+
+Introducir inicialmente:
+
+SOL
+MERCURIO
+VENUS
+TIERRA
+LUNA
+MARTE
+JUPITER
+SATURNO
+URANO
+NEPTUNO.
+
+Añadir toda la información científica definida anteriormente.
+
+Separar datos científicos de narraciones.
+
+---
+
+# FASE 9 — NARRACIONES
+
+Crear las narraciones educativas.
+
+Objetivo:
+
+45-90 segundos aproximadamente por astro.
+
+Dividir cada presentación en bloques.
+
+Cada bloque:
+
+texto
++
+tipo de gesto.
+
+Revisar que los textos sean naturales en español.
+
+---
+
+# FASE 10 — QR → BD
+
+Conectar:
+
+QR
+→ qr_id
+→ SQLite
+→ astro.
+
+Ejemplo:
+
+MARTE_001
+→ Marte.
+
+---
+
+# FASE 11 — PRESENTADOR
+
+Crear el componente encargado de:
+
+cargar astro
+→ recorrer bloques
+→ voz
+→ gestos
+→ finalizar.
+
+---
+
+# FASE 12 — FLUJO COMPLETO
+
+Integrar:
+
+CÁMARA
+→ QR
+→ BD
+→ NARRACIÓN
+→ DAVEFX
+→ GESTOS.
+
+Primera prueba:
+
+TIERRA_001.
+
+---
+
+# FASE 13 — COOLDOWN
+
+Implementar:
+
+detectar tarjeta
+→ bloquear detección
+→ explicación
+→ esperar retirada
+→ volver a escanear.
+
+---
+
+# FASE 14 — TODOS LOS PLANETAS
+
+Probar individualmente:
+
+SOL
+MERCURIO
+VENUS
+TIERRA
+LUNA
+MARTE
+JUPITER
+SATURNO
+URANO
+NEPTUNO.
+
+Comprobar:
+
+QR
+voz
+datos
+gestos
+duración
+errores.
+
+---
+
+# FASE 15 — OPTIMIZACIÓN RASPBERRY
+
+Medir:
+
+- CPU;
+- RAM;
+- tiempo de detección;
+- tiempo QR → respuesta;
+- estabilidad;
+- carga de cámara.
+
+Optimizar solamente donde sea necesario.
+
+---
+
+# FASE 16 — INSTALACIÓN FINAL
+
+Preparar la versión definitiva como Reachy Mini App.
+
+Debe poder instalarse de forma reproducible.
+
+Documentar:
+
+instalación
+configuración
+ejecución
+desinstalación
+actualización.
+
+---
+
+# FASE 17 — PRUEBA FINAL
+
+Realizar:
+
+1. Encender Reachy.
+2. Abrir Mini Reachy Apps.
+3. Ejecutar Sistema Solar.
+4. Reachy queda esperando.
+5. Mostrar Marte.
+6. Detecta MARTE_001.
+7. Hace gesto.
+8. Comienza explicación.
+9. DaveFX habla en español.
+10. Reachy mueve cabeza/cuerpo/antenas.
+11. Cuenta diferentes datos.
+12. Cuenta curiosidades.
+13. Finaliza.
+14. Pide otra tarjeta.
+15. Retirar Marte.
+16. Mostrar Saturno.
+17. Detectar Saturno.
+18. Realizar presentación de Saturno.
+19. Repetir con otros planetas.
+20. Cerrar aplicación.
+21. Verificar que cámara/audio/movimiento quedan correctamente liberados.
+
+---
+
+# REGLAS PARA CODEX
+
+1. NO inventar APIs de Reachy.
+
+2. Inspeccionar SDK/código/documentación disponible antes de utilizar una función.
+
+3. NO añadir IA.
+
+4. NO utilizar ElevenLabs.
+
+5. Utilizar DaveFX para voz.
+
+6. Priorizar movimientos predeterminados de Reachy Mini.
+
+7. NO controlar motores directamente salvo necesidad demostrada.
+
+8. Mantener seguridad física del robot.
+
+9. Mantener código sencillo.
+
+10. Optimizar para Raspberry Pi.
+
+11. Añadir logs.
+
+12. Añadir manejo de errores.
+
+13. Probar cada componente independientemente.
+
+14. NO avanzar de fase si la anterior falla.
+
+15. NO rehacer componentes que ya funcionan sin motivo.
+
+16. Si existe Lexia, utilizarla como referencia para la integración con Mini Reachy Apps.
+
+17. Antes de instalar paquetes nuevos, comprobar si ya existen.
+
+18. Explicar cualquier dependencia nueva.
+
+19. No modificar configuración global del robot innecesariamente.
+
+20. Mantener un README actualizado durante todo el desarrollo.
+
+21. Después de cada fase, DETENERSE y esperar mi autorización.
+
+---
+
+# EMPIEZA AHORA
+
+Empieza exclusivamente por:
+
+# FASE 0 — INSPECCIÓN
+
+NO programes todavía el proyecto completo.
+
+Inspecciona el entorno y determina:
+
+- cómo está instalado Reachy Mini;
+- SDK y versión;
+- arquitectura de Reachy Mini Apps;
+- cómo hicimos Lexia si el proyecto está disponible;
+- cómo acceder a las cámaras;
+- cómo reproducir audio;
+- cómo utilizar DaveFX;
+- qué movimientos/gestos predeterminados existen;
+- cómo ejecutar voz y movimiento simultáneamente;
+- cómo debe empaquetarse finalmente Sistema Solar.
+
+Después entrégame:
+
+1. Qué has encontrado.
+2. Arquitectura propuesta.
+3. Dependencias necesarias.
+4. Riesgos o incompatibilidades detectadas.
+5. Qué harás exactamente en FASE 1.
+
+Y DETENTE.
+
+No comiences FASE 1 hasta que yo escriba explícitamente:
+
+"continúa".
