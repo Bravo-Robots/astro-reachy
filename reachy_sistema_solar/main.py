@@ -12,6 +12,7 @@ from .database import SolarRepository
 from .presenter import Presenter
 from .robot import DaveFXVoice, GesturePlayer
 from .vision import QRVision
+from .voice_choice import VoiceChoice, YesNoListener
 
 LOGGER = logging.getLogger("reachy_sistema_solar")
 
@@ -30,6 +31,7 @@ class ReachySistemaSolar(ReachyMiniApp):
             repo.initialise()
             vision = QRVision(reachy_mini)
             presenter = Presenter(DaveFXVoice(reachy_mini, settings), GesturePlayer(reachy_mini))
+            listener = YesNoListener(reachy_mini, settings)
             state = AppState.SCANNING
             LOGGER.info("[APP] Sistema Solar iniciado; [STATE] %s", state.value)
             while not stop_event.wait(1 / settings.scan_fps):
@@ -48,20 +50,25 @@ class ReachySistemaSolar(ReachyMiniApp):
                     LOGGER.info("[DATABASE] Encontrado: %s", body["name"])
                     state = AppState.PRESENTING
                     presenter.present_discovery(body)
-                    active_body, state, missing_frames = body, AppState.WAIT_CHOICE, 0
-                    LOGGER.info("[STATE] %s", state.value)
-                elif state is AppState.WAIT_CHOICE:
-                    if qr_id == latched_qr:
-                        continue
-                    if qr_id == "MAS_001" and active_body:
-                        LOGGER.info("[CHOICE] Más información sobre %s", active_body["name"])
+                    state = AppState.LISTENING
+                    choice = listener.listen(stop_event)
+                    attempts = 0
+                    while choice is VoiceChoice.UNKNOWN and attempts < settings.voice_answer_retries and not stop_event.is_set():
+                        attempts += 1
+                        presenter.voice.speak("No te he entendido. ¿Quieres saber más? Responde sí o no.")
+                        choice = listener.listen(stop_event)
+                    if choice is VoiceChoice.YES:
+                        LOGGER.info("[CHOICE] Más información sobre %s", body["name"])
                         state = AppState.PRESENTING
-                        presenter.present_more(active_body)
-                        state, latched_qr, active_body, missing_frames = AppState.WAIT_CARD_REMOVAL, "MAS_001", None, 0
-                    elif qr_id == "OTRA_001":
-                        LOGGER.info("[CHOICE] Nuevo planeta")
-                        state, latched_qr, active_body, missing_frames = AppState.WAIT_CARD_REMOVAL, "OTRA_001", None, 0
-                        presenter.voice.speak("¡Rumbo a una nueva órbita! Retira la tarjeta y muéstrame otro planeta.")
+                        presenter.present_more(body)
+                    elif choice is VoiceChoice.NO:
+                        LOGGER.info("[CHOICE] El visitante termina la misión de %s", body["name"])
+                        presenter.voice.speak("Perfecto. Cuando quieras, enséñame otra tarjeta para descubrir un nuevo planeta.")
+                    else:
+                        presenter.voice.speak("No he recibido una respuesta. Estoy listo para leer otra tarjeta.")
+                    # Evita repetir el mismo planeta mientras la tarjeta sigue
+                    # delante de la cámara. La siguiente misión empieza al retirarla.
+                    state, active_body, missing_frames = AppState.WAIT_CARD_REMOVAL, None, 0
                 elif state is AppState.WAIT_CARD_REMOVAL:
                     if qr_id == latched_qr:
                         missing_frames = 0

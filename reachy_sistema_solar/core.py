@@ -19,6 +19,7 @@ class AppState(str, Enum):
     LOADING = "LOADING"
     PRESENTING = "PRESENTING"
     WAIT_CHOICE = "WAIT_CHOICE"
+    LISTENING = "LISTENING"
     WAIT_CARD_REMOVAL = "WAIT_CARD_REMOVAL"
     ERROR = "ERROR"
     RECOVERY = "RECOVERY"
@@ -31,3 +32,5 @@ class Settings:
     piper_bin: str = os.getenv("DAVEFX_PIPER_BIN", "piper")
     davefx_model: str = os.getenv("DAVEFX_MODEL", "/opt/reachy/voices/es_ES-davefx-medium.onnx")
     audio_player: str = os.getenv("DAVEFX_AUDIO_PLAYER", "aplay")
+    voice_answer_timeout: float = float(os.getenv("SOLAR_VOICE_TIMEOUT", "5"))
+    voice_answer_retries: int = int(os.getenv("SOLAR_VOICE_RETRIES", "1"))

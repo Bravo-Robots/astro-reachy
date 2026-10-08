@@ -26,13 +26,13 @@ class Presenter:
         self._speak_blocks(body, body["narration"][:3])
         self.voice.speak(
             f"¡Qué gran descubrimiento, explorador! Ya conocemos lo esencial de {body['name']}. "
-            "¿Quieres saber más? Muestra la tarjeta MÁS para continuar, u OTRA para seguir viajando."
+            "¿Quieres saber más? Responde sí o no cuando escuches la señal."
         )
 
     def present_more(self, body: dict[str, Any]) -> None:
         """Segunda cápsula: profundiza solo cuando el visitante lo pide."""
         LOGGER.info("[PRESENTATION] Ampliación de %s", body["name"])
         self.voice.speak(f"¡Excelente elección! Abrimos el cuaderno estelar de {body['name']}.")
-        self._speak_blocks(body, body["narration"][3:])
-        self.voice.speak("¡Muy bien! Enséñame otra tarjeta para continuar nuestro viaje por el Sistema Solar.")
+        self._speak_blocks(body, body["narration"][3:6])
+        self.voice.speak("Misión completada. Enséñame otra tarjeta cuando quieras seguir viajando.")
         LOGGER.info("[PRESENTATION] Finalizada")

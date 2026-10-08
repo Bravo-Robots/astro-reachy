@@ -23,27 +23,30 @@ Al mostrar una tarjeta física, la cámara de Reachy detecta su QR con OpenCV.
 El QR solo contiene un identificador; la app recupera el objeto y sus bloques
 educativos desde SQLite, habla con Piper/DaveFX y ejecuta gestos oficiales de
 Reachy cuando estén disponibles. Primero comparte una cápsula de descubrimiento
-y pregunta si se quiere saber más. Las tarjetas `MAS_001` y `OTRA_001` sirven
-como respuesta física sin necesitar reconocimiento de voz; tras una presentación
-espera a que la tarjeta desaparezca, para no repetirla continuamente.
+y pregunta si se quiere saber más. Reachy escucha una respuesta breve en español:
+**sí** reproduce otros tres datos del mismo astro y **no** vuelve a esperar otra
+tarjeta planetaria. El audio de esa respuesta se procesa de forma momentánea y
+no se guarda.
 
-No usa LLM, servicios cloud, reconocimiento de voz ni movimientos articulares
-propios.
+No usa LLM ni movimientos articulares propios. El reconocimiento de las
+respuestas habladas usa un servicio de transcripción en español; necesita
+conexión de red durante la pregunta.
 
 ## Tarjetas QR
 
 Los PNG imprimibles de `assets/cards/` se generan a 300 dpi en 100 × 141,7 mm,
 con QR de alta corrección de errores y una zona blanca para máxima legibilidad.
-También se incluyen las respuestas `MAS_001` y `OTRA_001`. Se generan una vez en el equipo de
-desarrollo (no hace falta `qrcode` en Reachy):
+Las tarjetas `MAS_001` y `OTRA_001` se conservan en la carpeta como material
+de respaldo, pero ya no se usan: las decisiones se toman por voz. Las tarjetas
+se generan una vez en el equipo de desarrollo (no hace falta `qrcode` en Reachy):
 
 ```powershell
 py -3.15 -m pip install ".[cards]"
 py -3.15 scripts/generate_cards.py
 ```
 
-Se crearán diez tarjetas cuyo contenido QR es, por ejemplo, `MARTE_001`; la
-información no se almacena dentro del código.
+Se crearán las tarjetas de los diez astros; su contenido QR es, por ejemplo,
+`MARTE_001`. La información no se almacena dentro del código.
 
 Las fotografías planetarias usadas en las tarjetas están en `assets/planets/`
 y proceden de misiones de NASA; las referencias concretas se conservan en
@@ -81,7 +84,7 @@ Después, desde la carpeta de la app:
 reachy-mini-app-assistant check .
 ```
 
-En el dashboard, instala/ejecuta **Sistema Solar**. La app solicita el backend
+En el dashboard, instala/ejecuta **Astro Reachy**. La app solicita el backend
 de media estándar del SDK, obtiene frames BGR con `mini.media.get_frame()` y
 los procesa a 6 FPS por defecto; puede bajarse con `SOLAR_SCAN_FPS` en una
 Raspberry Pi si hiciera falta.
@@ -93,5 +96,18 @@ py -3.15 -m unittest discover -s tests -v
 ```
 
 Estas pruebas validan los diez identificadores, el sembrado SQLite y el caso de
-QR desconocido. La prueba final de cámara, audio y gestos debe hacerse en el
-robot porque este entorno de Windows no tiene `reachy-mini` ni hardware.
+QR desconocido y las respuestas de voz “sí/no”. La prueba final de cámara,
+audio y gestos debe hacerse en el robot porque este entorno de Windows no tiene
+`reachy-mini` ni hardware.
+
+## Prueba física recomendada
+
+1. Abre Astro Reachy desde Aplicaciones y coloca una tarjeta planetaria a unos
+   25–45 cm de la cámara, con iluminación uniforme.
+2. Tras los tres primeros datos, espera a que Reachy termine de hablar y di
+   claramente **“sí”** o **“no”** mirando hacia el robot.
+3. Con “sí” debe contar otros tres datos y después pedir una nueva tarjeta.
+   Con “no” debe volver directamente al escaneo.
+4. Retira la tarjeta antes de presentar la siguiente para evitar una lectura
+   repetida. Si no comprende la respuesta, repetirá la pregunta una vez y
+   después volverá al escáner.

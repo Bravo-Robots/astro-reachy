@@ -11,6 +11,7 @@ requires-python = ">=3.10,<3.13"
 dependencies = [
     "reachy-mini>=1.8,<2",
     "opencv-python-headless>=4.8,<5",
+    "SpeechRecognition>=3.10,<4",
 ]
 
 [project.optional-dependencies]
