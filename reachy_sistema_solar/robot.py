@@ -8,6 +8,7 @@ import tempfile
 import threading
 import time
 from typing import Any, Callable
+import wave
 
 from .core import Settings
 
@@ -32,6 +33,12 @@ class DaveFXVoice:
         """Compatibilidad: no precargamos ONNX para no frenar cámara ni gestos."""
         return
 
+    @staticmethod
+    def _duration_seconds(path: Path) -> float:
+        """Duración real del WAV para sincronizar voz, gesto y micrófono."""
+        with wave.open(str(path), "rb") as wav_file:
+            return wav_file.getnframes() / max(1, wav_file.getframerate())
+
     def speak(self, text: str, on_playback_start: Callable[[], None] | None = None) -> bool:
         model = Path(self.settings.davefx_model)
         output = Path(tempfile.mkstemp(prefix="reachy-solar-", suffix=".wav")[1])
@@ -54,8 +61,12 @@ class DaveFXVoice:
             # voz (no llega después de que termine de hablar).
             if on_playback_start is not None:
                 on_playback_start()
-            # API oficial: el media manager reproduce un fichero wav local.
+            # play_sound es asíncrono en el SDK. Conservamos el fichero y
+            # esperamos su duración, de modo que el micrófono nunca intenta
+            # reconocer la propia pregunta de Reachy.
+            duration = self._duration_seconds(output)
             self.reachy.media.play_sound(str(output))
+            time.sleep(duration + 0.20)
             return True
         except Exception as error:
             LOGGER.exception("[VOICE] No se pudo reproducir DaveFX: %s", error)
