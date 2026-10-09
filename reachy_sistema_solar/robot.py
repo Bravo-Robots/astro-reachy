@@ -140,20 +140,37 @@ class GesturePlayer:
         return thread
 
     def play_sequence(self, gestures: list[str], speech_duration: float) -> threading.Thread:
-        """Reparte los gestos narrativos durante toda la explicación."""
-        selected = gestures[:5]
+        """Encadena gestos suaves durante toda la explicación, sin pausas."""
+        selected = gestures[:5] or ["atento"]
 
         def run() -> None:
-            if not selected:
-                return
-            # Deja que se oiga claramente la frase de descubrimiento antes
-            # del primer gesto, pero aún sucede durante la explicación.
-            time.sleep(min(3.0, speech_duration / 5.0))
-            interval = max(5.2, speech_duration / (len(selected) + 0.5))
-            for index, gesture in enumerate(selected):
-                if index:
-                    time.sleep(interval)
-                self.play(gesture)
+            deadline = time.monotonic() + max(0.0, speech_duration - 1.0)
+            index = 0
+            # Cada destino parte de la postura anterior. Esto hace que cabeza,
+            # cuerpo y antenas se desplacen de forma continua en lugar de
+            # hacer gestos aislados con una parada entre ellos.
+            while time.monotonic() < deadline:
+                gesture = selected[index % len(selected)]
+                target = self._MAP.get(gesture, self._MAP["atento"])
+                angle = {"alegre": 0.28, "curioso": -0.24, "sorpresa": 0.18,
+                         "suave": -0.16, "orgulloso": 0.32, "atento": -0.20}.get(gesture, 0.0)
+                head = np.eye(4)
+                head[:3, :3] = np.array([
+                    [math.cos(angle), -math.sin(angle), 0.0],
+                    [math.sin(angle), math.cos(angle), 0.0],
+                    [0.0, 0.0, 1.0],
+                ])
+                body_yaw = 0.22 if gesture in {"alegre", "orgulloso", "sorpresa"} else -0.18
+                try:
+                    self.reachy.goto_target(head=head, antennas=target, duration=1.15, body_yaw=body_yaw)
+                except Exception as error:
+                    LOGGER.warning("[MOTION] Secuencia detenida: %s", error)
+                    break
+                index += 1
+            try:
+                self.reachy.goto_target(head=np.eye(4), antennas=[-0.1745, 0.1745], duration=1.0, body_yaw=0.0)
+            except Exception:
+                pass
 
         thread = threading.Thread(target=run, name="astro-gesture-sequence", daemon=True)
         thread.start()
