@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import logging
+import os
 from pathlib import Path
 import subprocess
 import tempfile
@@ -28,6 +29,20 @@ class DaveFXVoice:
             self._piper_voice = PiperVoice.load(str(model))
         with wave.open(str(output), "wb") as wav_file:
             self._piper_voice.synthesize_wav(text, wav_file)
+
+    def warm_up(self) -> None:
+        """Carga DaveFX al iniciar para que la primera tarjeta responda al instante."""
+        model = Path(self.settings.davefx_model)
+        if not model.is_file():
+            return
+        descriptor, path = tempfile.mkstemp(suffix=".wav")
+        os.close(descriptor)
+        try:
+            self._synthesise_davefx("Listo.", Path(path), model)
+        except Exception as error:
+            LOGGER.warning("[VOICE] No se pudo precargar DaveFX: %s", error)
+        finally:
+            Path(path).unlink(missing_ok=True)
 
     def speak(self, text: str) -> bool:
         model = Path(self.settings.davefx_model)

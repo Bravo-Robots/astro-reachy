@@ -30,7 +30,9 @@ class ReachySistemaSolar(ReachyMiniApp):
         try:
             repo.initialise()
             vision = QRVision(reachy_mini)
-            presenter = Presenter(DaveFXVoice(reachy_mini, settings), GesturePlayer(reachy_mini))
+            voice = DaveFXVoice(reachy_mini, settings)
+            voice.warm_up()
+            presenter = Presenter(voice, GesturePlayer(reachy_mini))
             listener = YesNoListener(reachy_mini, settings)
             state = AppState.SCANNING
             LOGGER.info("[APP] Sistema Solar iniciado; [STATE] %s", state.value)
