@@ -19,13 +19,10 @@ class Presenter:
             return
         LOGGER.info("[VOICE] Reproduciendo cápsula: %s", ", ".join(block["id"] for block in blocks))
         text = " ".join(block["text"] for block in blocks) + " " + closing
-        # Las coreografías descargadas pueden reclamar el canal multimedia o
-        # los motores mientras comienza la reproducción. En el Mini eso puede
-        # cortar el WAV tras la frase de bienvenida y se percibe como un gesto
-        # espasmódico. La prioridad de una tarjeta es una explicación audible,
-        # continua y completa; los movimientos expresivos no deben competir
-        # con ella.
-        self.voice.speak(text)
+        # Los gestos de antenas son deliberadamente ligeros: acompañan la voz
+        # sin las coreografías completas que antes podían interrumpir el WAV.
+        gestures = [block["gesture"] for block in blocks]
+        self.voice.speak(text, on_playback_start=lambda duration: self.gestures.play_sequence(gestures, duration))
 
     def present_discovery(self, body: dict[str, Any]) -> None:
         """Cinco datos esenciales, seguidos de espera para otra tarjeta."""

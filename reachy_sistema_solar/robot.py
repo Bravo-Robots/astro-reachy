@@ -89,51 +89,33 @@ class DaveFXVoice:
 
 
 class GesturePlayer:
-    """Solo reproduce movimientos registrados por Pollen; no manda motores manualmente."""
-    # Nombres comprobados en la biblioteca oficial de Pollen. Cada movimiento
-    # ya contiene una trayectoria segura de cabeza, cuerpo y antenas.
+    """Gestos mínimos de antenas que no compiten con la reproducción de voz."""
+    # Los movimientos registrados de la biblioteca de emociones contienen
+    # coreografías completas. En un Mini inalámbrico pueden competir con el
+    # audio de la narración. Usamos en su lugar pequeños movimientos de
+    # antenas: visibles, silenciosos y sin cambiar cabeza ni cuerpo.
     _MAP = {
-        "alegre": "welcoming1",
-        "curioso": "curious1",
-        "sorpresa": "surprised1",
-        "suave": "calming1",
-        "orgulloso": "proud1",
-        "atento": "attentive1",
+        "alegre": [0.18, -0.18],
+        "curioso": [-0.14, 0.22],
+        "sorpresa": [0.30, -0.30],
+        "suave": [0.10, -0.10],
+        "orgulloso": [-0.24, 0.16],
+        "atento": [0.14, 0.14],
     }
 
     def __init__(self, reachy: Any) -> None:
         self.reachy = reachy
-        self.moves: Any | None = None
         self._last_started = 0.0
-        self._moves_lock = threading.Lock()
-        # La primera descarga puede tardar con Wi‑Fi. No retrasa nunca el
-        # lector de tarjetas: mientras llega, Reachy simplemente habla sin
-        # gesticular y se incorporan los gestos cuando ya estén disponibles.
-        threading.Thread(target=self._load_moves, name="astro-gestures-load", daemon=True).start()
-
-    def _load_moves(self) -> None:
-        try:
-            from reachy_mini.motion.recorded_move import RecordedMoves
-            moves = RecordedMoves("pollen-robotics/reachy-mini-emotions-library")
-            with self._moves_lock:
-                self.moves = moves
-            LOGGER.info("[MOTION] Biblioteca oficial de emociones disponible")
-        except Exception as error:
-            LOGGER.warning("[MOTION] Gestos oficiales no disponibles; se omitirá movimiento: %s", error)
 
     def play(self, gesture: str) -> None:
-        with self._moves_lock:
-            moves = self.moves
-        if not moves:
-            return
-        # Nunca solapar coreografías: el daemon rechaza objetivos simultáneos
-        # y el resultado visual parece un espasmo.
+        # Nunca solapar movimientos: el daemon rechaza objetivos simultáneos.
         if time.monotonic() - self._last_started < 6.0:
             return
         try:
-            name = self._MAP.get(gesture, "happy")
+            target = self._MAP.get(gesture, self._MAP["atento"])
             self._last_started = time.monotonic()
-            self.reachy.play_move(moves.get(name), initial_goto_duration=1.0)
+            self.reachy.goto_target(antennas=target, duration=0.55, body_yaw=None)
+            self.reachy.goto_target(antennas=[0.0, 0.0], duration=0.55, body_yaw=None)
         except Exception as error:
             LOGGER.warning("[MOTION] Gesto omitido: %s", error)
 
