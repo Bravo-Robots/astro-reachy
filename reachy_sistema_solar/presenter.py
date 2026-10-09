@@ -31,7 +31,7 @@ class Presenter:
         self._speak_blocks(body, body["narration"][:3])
         self.voice.speak(
             f"¡Qué gran descubrimiento, explorador! Ya conocemos lo esencial de {body['name']}. "
-            "¿Quieres saber más? Responde sí o no cuando escuches la señal."
+            "¿Quieres saber más? Cuando termine de hablar, responde sí o no."
         )
 
     def present_more(self, body: dict[str, Any]) -> None:
