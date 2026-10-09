@@ -22,11 +22,25 @@ class QRVision:
             frame = self.reachy.media.get_frame()
             if frame is None:
                 return None
-            codes = self.zxingcpp.read_barcodes(frame)
-            for code in codes:
-                value = code.text.strip()
-                if value:
-                    return value
+            # Limitamos la búsqueda a QR y probamos dos binarizaciones. Esto
+            # mantiene una lectura ágil pero tolera compresión, poco contraste
+            # y un desenfoque moderado en la transmisión de la cámara.
+            for binarizer in (
+                self.zxingcpp.Binarizer.LocalAverage,
+                self.zxingcpp.Binarizer.GlobalHistogram,
+            ):
+                codes = self.zxingcpp.read_barcodes(
+                    frame,
+                    formats=self.zxingcpp.BarcodeFormat.QRCode,
+                    try_rotate=True,
+                    try_downscale=True,
+                    try_invert=True,
+                    binarizer=binarizer,
+                )
+                for code in codes:
+                    value = code.text.strip()
+                    if value:
+                        return value
             return None
         except Exception as error:
             LOGGER.warning("[CAMERA] Frame/QR no disponible: %s", error)
