@@ -29,6 +29,14 @@ class DaveFXVoice:
         if result.returncode:
             raise RuntimeError(result.stderr.strip() or "Piper no pudo sintetizar DaveFX")
 
+    def _synthesise_espeak(self, text: str, output: Path) -> None:
+        result = subprocess.run(
+            [self.settings.espeak_bin, "-v", self.settings.espeak_voice, "-s", "155", "-w", str(output), text],
+            text=True, encoding="utf-8", capture_output=True, timeout=20, check=False,
+        )
+        if result.returncode:
+            raise RuntimeError(result.stderr.strip() or "eSpeak NG no pudo sintetizar la voz")
+
     def warm_up(self) -> None:
         """Compatibilidad: no precargamos ONNX para no frenar cámara ni gestos."""
         return
@@ -43,20 +51,11 @@ class DaveFXVoice:
         model = Path(self.settings.davefx_model)
         output = Path(tempfile.mkstemp(prefix="reachy-solar-", suffix=".wav")[1])
         try:
-            if model.is_file():
+            if self.settings.voice_engine.lower() == "davefx" and model.is_file():
                 self._synthesise_davefx(text, output, model)
             else:
-                # El Wireless no trae el modelo DaveFX de fábrica. eSpeak NG
-                # está disponible en su sistema y mantiene la experiencia
-                # didáctica completamente local, sin depender de internet.
-                LOGGER.info("[VOICE] DaveFX no disponible; usando voz local eSpeak NG")
-                result = subprocess.run(
-                    [self.settings.espeak_bin, "-v", self.settings.espeak_voice, "-s", "155", "-w", str(output), text],
-                    text=True, encoding="utf-8", capture_output=True, timeout=45, check=False,
-                )
-                if result.returncode:
-                    LOGGER.error("[VOICE] eSpeak NG falló: %s", result.stderr.strip())
-                    return False
+                LOGGER.info("[VOICE] Usando voz local inmediata")
+                self._synthesise_espeak(text, output)
             # Arranca el gesto justo antes de reproducir: así acompaña a la
             # voz (no llega después de que termine de hablar).
             duration = self._duration_seconds(output)
