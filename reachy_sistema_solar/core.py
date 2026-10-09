@@ -38,10 +38,10 @@ class Settings:
     removal_frames: int = int(os.getenv("SOLAR_REMOVAL_FRAMES", "12"))
     piper_bin: str = os.getenv("DAVEFX_PIPER_BIN", str(Path(sys.executable).parent / "piper"))
     davefx_model: str = os.getenv("DAVEFX_MODEL", "/opt/reachy/voices/es_ES-davefx-medium.onnx")
-    # DaveFX medium tarda más de 45 s por cápsula larga en el CM4. Para una
-    # interacción fluida usamos la síntesis local inmediata; se puede forzar
-    # DaveFX con SOLAR_VOICE_ENGINE=davefx en equipos más potentes.
-    voice_engine: str = os.getenv("SOLAR_VOICE_ENGINE", "espeak")
+    # DaveFX se precalcula al instalar/preparar la demostración; reproducir
+    # WAVs ya preparados es inmediato incluso en el CM4.
+    voice_engine: str = os.getenv("SOLAR_VOICE_ENGINE", "davefx")
+    davefx_cache_dir: str = os.getenv("DAVEFX_CACHE_DIR", "/home/pollen/.cache/astro_reachy/davefx")
     espeak_bin: str = os.getenv("SOLAR_ESPEAK_BIN", "espeak-ng")
     espeak_voice: str = os.getenv("SOLAR_ESPEAK_VOICE", "es")
     audio_player: str = os.getenv("DAVEFX_AUDIO_PLAYER", "aplay")

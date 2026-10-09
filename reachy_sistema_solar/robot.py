@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import logging
+import hashlib
 from pathlib import Path
 import subprocess
 import tempfile
@@ -24,7 +25,7 @@ class DaveFXVoice:
         """Genera DaveFX en un proceso corto, aislado del vídeo del robot."""
         result = subprocess.run(
             [self.settings.piper_bin, "--model", str(model), "--output_file", str(output)],
-            input=text, text=True, encoding="utf-8", capture_output=True, timeout=45, check=False,
+            input=text, text=True, encoding="utf-8", capture_output=True, timeout=300, check=False,
         )
         if result.returncode:
             raise RuntimeError(result.stderr.strip() or "Piper no pudo sintetizar DaveFX")
@@ -36,6 +37,12 @@ class DaveFXVoice:
         )
         if result.returncode:
             raise RuntimeError(result.stderr.strip() or "eSpeak NG no pudo sintetizar la voz")
+
+    def _davefx_cache_file(self, text: str) -> Path:
+        digest = hashlib.sha256(text.encode("utf-8")).hexdigest()[:24]
+        directory = Path(self.settings.davefx_cache_dir)
+        directory.mkdir(parents=True, exist_ok=True)
+        return directory / f"{digest}.wav"
 
     def warm_up(self) -> None:
         """Compatibilidad: no precargamos ONNX para no frenar cámara ni gestos."""
@@ -49,12 +56,18 @@ class DaveFXVoice:
 
     def speak(self, text: str, on_playback_start: Callable[[float], None] | None = None) -> bool:
         model = Path(self.settings.davefx_model)
-        output = Path(tempfile.mkstemp(prefix="reachy-solar-", suffix=".wav")[1])
+        output: Path | None = None
+        is_cached = False
         try:
             if self.settings.voice_engine.lower() == "davefx" and model.is_file():
-                self._synthesise_davefx(text, output, model)
+                output = self._davefx_cache_file(text)
+                is_cached = output.is_file() and output.stat().st_size > 44
+                if not is_cached:
+                    LOGGER.info("[VOICE] Preparando cápsula DaveFX (sólo una vez)")
+                    self._synthesise_davefx(text, output, model)
             else:
                 LOGGER.info("[VOICE] Usando voz local inmediata")
+                output = Path(tempfile.mkstemp(prefix="reachy-solar-", suffix=".wav")[1])
                 self._synthesise_espeak(text, output)
             # Arranca el gesto justo antes de reproducir: así acompaña a la
             # voz (no llega después de que termine de hablar).
@@ -71,7 +84,8 @@ class DaveFXVoice:
             LOGGER.exception("[VOICE] No se pudo reproducir DaveFX: %s", error)
             return False
         finally:
-            output.unlink(missing_ok=True)
+            if output is not None and not is_cached and self.settings.voice_engine.lower() != "davefx":
+                output.unlink(missing_ok=True)
 
 
 class GesturePlayer:
