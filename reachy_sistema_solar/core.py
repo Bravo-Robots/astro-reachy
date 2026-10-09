@@ -41,5 +41,7 @@ class Settings:
     espeak_bin: str = os.getenv("SOLAR_ESPEAK_BIN", "espeak-ng")
     espeak_voice: str = os.getenv("SOLAR_ESPEAK_VOICE", "es")
     audio_player: str = os.getenv("DAVEFX_AUDIO_PLAYER", "aplay")
-    voice_answer_timeout: float = float(os.getenv("SOLAR_VOICE_TIMEOUT", "5"))
-    voice_answer_retries: int = int(os.getenv("SOLAR_VOICE_RETRIES", "1"))
+    # Deja una ventana humana real tras la pregunta; el usuario no necesita
+    # responder mientras Reachy aún está terminando de hablar.
+    voice_answer_timeout: float = float(os.getenv("SOLAR_VOICE_TIMEOUT", "8"))
+    voice_answer_retries: int = int(os.getenv("SOLAR_VOICE_RETRIES", "2"))
