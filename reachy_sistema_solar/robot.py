@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import logging
 import hashlib
+import math
 from pathlib import Path
 import subprocess
 import tempfile
@@ -10,6 +11,8 @@ import threading
 import time
 from typing import Any, Callable
 import wave
+
+import numpy as np
 
 from .core import Settings
 
@@ -114,8 +117,20 @@ class GesturePlayer:
         try:
             target = self._MAP.get(gesture, self._MAP["atento"])
             self._last_started = time.monotonic()
-            self.reachy.goto_target(antennas=target, duration=0.55, body_yaw=None)
-            self.reachy.goto_target(antennas=[0.0, 0.0], duration=0.55, body_yaw=None)
+            # Alternamos un asentimiento/inclinación de cabeza y un giro
+            # corporal mínimo. Son posiciones interpoladas, no animaciones
+            # completas, para que sigan siendo silenciosas y predecibles.
+            angle = {"alegre": 0.12, "curioso": -0.10, "sorpresa": 0.08,
+                     "suave": -0.07, "orgulloso": 0.14, "atento": -0.06}.get(gesture, 0.0)
+            head = np.eye(4)
+            head[:3, :3] = np.array([
+                [math.cos(angle), -math.sin(angle), 0.0],
+                [math.sin(angle), math.cos(angle), 0.0],
+                [0.0, 0.0, 1.0],
+            ])
+            body_yaw = 0.10 if gesture in {"alegre", "orgulloso", "sorpresa"} else -0.08
+            self.reachy.goto_target(head=head, antennas=target, duration=0.70, body_yaw=body_yaw)
+            self.reachy.goto_target(head=np.eye(4), antennas=[-0.1745, 0.1745], duration=0.70, body_yaw=0.0)
         except Exception as error:
             LOGGER.warning("[MOTION] Gesto omitido: %s", error)
 
@@ -131,6 +146,9 @@ class GesturePlayer:
         def run() -> None:
             if not selected:
                 return
+            # Deja que se oiga claramente la frase de descubrimiento antes
+            # del primer gesto, pero aún sucede durante la explicación.
+            time.sleep(min(3.0, speech_duration / 5.0))
             interval = max(6.5, speech_duration / (len(selected) + 0.5))
             for index, gesture in enumerate(selected):
                 if index:
