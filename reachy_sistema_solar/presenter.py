@@ -14,11 +14,14 @@ class Presenter:
         self.voice, self.gestures = voice, gestures
 
     def _speak_blocks(self, body: dict[str, Any], blocks: list[dict[str, str]]) -> None:
-        for block in blocks:
+        for index, block in enumerate(blocks):
             LOGGER.info("[VOICE] Reproduciendo bloque: %s", block["id"])
-            gesture_thread = self.gestures.play_concurrently(block["gesture"])
+            # Una sola coreografía por cápsula. Antes se lanzaban varias en
+            # paralelo si el audio no estaba disponible, provocando órdenes
+            # de motor incompatibles.
+            if index == 0:
+                self.gestures.play(block["gesture"])
             self.voice.speak(block["text"])
-            gesture_thread.join(timeout=0.1)
 
     def present_discovery(self, body: dict[str, Any]) -> None:
         """Primera cápsula: breve, dinámica y suficiente para despertar curiosidad."""

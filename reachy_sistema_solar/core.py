@@ -36,6 +36,8 @@ class Settings:
     removal_frames: int = int(os.getenv("SOLAR_REMOVAL_FRAMES", "12"))
     piper_bin: str = os.getenv("DAVEFX_PIPER_BIN", "piper")
     davefx_model: str = os.getenv("DAVEFX_MODEL", "/opt/reachy/voices/es_ES-davefx-medium.onnx")
+    espeak_bin: str = os.getenv("SOLAR_ESPEAK_BIN", "espeak-ng")
+    espeak_voice: str = os.getenv("SOLAR_ESPEAK_VOICE", "es")
     audio_player: str = os.getenv("DAVEFX_AUDIO_PLAYER", "aplay")
     voice_answer_timeout: float = float(os.getenv("SOLAR_VOICE_TIMEOUT", "5"))
     voice_answer_retries: int = int(os.getenv("SOLAR_VOICE_RETRIES", "1"))
