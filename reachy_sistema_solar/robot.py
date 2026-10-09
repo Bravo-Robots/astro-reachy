@@ -98,12 +98,12 @@ class GesturePlayer:
     # audio de la narración. Usamos en su lugar pequeños movimientos de
     # antenas: visibles, silenciosos y sin cambiar cabeza ni cuerpo.
     _MAP = {
-        "alegre": [0.18, -0.18],
-        "curioso": [-0.14, 0.22],
-        "sorpresa": [0.30, -0.30],
-        "suave": [0.10, -0.10],
-        "orgulloso": [-0.24, 0.16],
-        "atento": [0.14, 0.14],
+        "alegre": [0.42, -0.42],
+        "curioso": [-0.36, 0.48],
+        "sorpresa": [0.58, -0.58],
+        "suave": [0.28, -0.28],
+        "orgulloso": [-0.48, 0.34],
+        "atento": [0.30, 0.30],
     }
 
     def __init__(self, reachy: Any) -> None:
@@ -120,17 +120,17 @@ class GesturePlayer:
             # Alternamos un asentimiento/inclinación de cabeza y un giro
             # corporal mínimo. Son posiciones interpoladas, no animaciones
             # completas, para que sigan siendo silenciosas y predecibles.
-            angle = {"alegre": 0.12, "curioso": -0.10, "sorpresa": 0.08,
-                     "suave": -0.07, "orgulloso": 0.14, "atento": -0.06}.get(gesture, 0.0)
+            angle = {"alegre": 0.28, "curioso": -0.24, "sorpresa": 0.18,
+                     "suave": -0.16, "orgulloso": 0.32, "atento": -0.20}.get(gesture, 0.0)
             head = np.eye(4)
             head[:3, :3] = np.array([
                 [math.cos(angle), -math.sin(angle), 0.0],
                 [math.sin(angle), math.cos(angle), 0.0],
                 [0.0, 0.0, 1.0],
             ])
-            body_yaw = 0.10 if gesture in {"alegre", "orgulloso", "sorpresa"} else -0.08
-            self.reachy.goto_target(head=head, antennas=target, duration=0.70, body_yaw=body_yaw)
-            self.reachy.goto_target(head=np.eye(4), antennas=[-0.1745, 0.1745], duration=0.70, body_yaw=0.0)
+            body_yaw = 0.22 if gesture in {"alegre", "orgulloso", "sorpresa"} else -0.18
+            self.reachy.goto_target(head=head, antennas=target, duration=0.90, body_yaw=body_yaw)
+            self.reachy.goto_target(head=np.eye(4), antennas=[-0.1745, 0.1745], duration=0.90, body_yaw=0.0)
         except Exception as error:
             LOGGER.warning("[MOTION] Gesto omitido: %s", error)
 
