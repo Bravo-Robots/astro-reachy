@@ -7,12 +7,15 @@ from __future__ import annotations
 
 import hashlib
 import json
+import os
 from pathlib import Path
 import subprocess
 import sys
 
 
-ROOT = Path(__file__).resolve().parents[1]
+# En el snapshot de Hugging Face los scripts pueden ser enlaces a blobs;
+# permitimos fijar la raíz del Space sin depender de resolve().
+ROOT = Path(os.getenv("ASTRO_SOURCE_ROOT", Path(__file__).parents[1]))
 MODEL = Path("/opt/reachy/voices/es_ES-davefx-medium.onnx")
 CACHE = Path("/home/pollen/.cache/astro_reachy/davefx")
 PIPER = Path(sys.executable).parent / "piper"
