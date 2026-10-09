@@ -5,10 +5,15 @@ from dataclasses import dataclass
 from enum import Enum
 from pathlib import Path
 import os
+import sys
 
 ROOT = Path(__file__).resolve().parent.parent
-DATA_FILE = ROOT / "data" / "objects.json"
-DATABASE_FILE = ROOT / "data" / "solar_system.db"
+SOURCE_DATA_FILE = ROOT / "data" / "objects.json"
+# En desarrollo los datos viven en el repositorio. Al instalarse como app,
+# setuptools los coloca bajo el prefijo del entorno compartido de Reachy.
+INSTALLED_DATA_FILE = Path(sys.prefix) / "data" / "objects.json"
+DATA_FILE = SOURCE_DATA_FILE if SOURCE_DATA_FILE.exists() else INSTALLED_DATA_FILE
+DATABASE_FILE = Path(os.getenv("SOLAR_DATABASE_FILE", "/tmp/astro_reachy/solar_system.db"))
 
 
 class AppState(str, Enum):

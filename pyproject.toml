@@ -25,5 +25,8 @@ astro-reachy = "reachy_sistema_solar.main:ReachySistemaSolar"
 package-dir = { "" = "." }
 include-package-data = true
 
+[tool.setuptools.data-files]
+data = ["data/objects.json"]
+
 [tool.setuptools.packages.find]
 where = ["."]
