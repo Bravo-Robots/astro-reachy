@@ -21,14 +21,18 @@ class DaveFXVoice:
     def __init__(self, reachy: Any, settings: Settings) -> None:
         self.reachy, self.settings = reachy, settings
         self._piper_voice: Any | None = None
+        self._piper_lock = threading.Lock()
 
     def _synthesise_davefx(self, text: str, output: Path, model: Path) -> None:
         """Mantiene DaveFX cargado para no pagar su arranque en cada frase."""
-        if self._piper_voice is None:
-            from piper import PiperVoice
-            self._piper_voice = PiperVoice.load(str(model))
-        with wave.open(str(output), "wb") as wav_file:
-            self._piper_voice.synthesize_wav(text, wav_file)
+        # La precarga ocurre en segundo plano; el candado evita abrir dos
+        # sesiones ONNX si se presenta una tarjeta durante ella.
+        with self._piper_lock:
+            if self._piper_voice is None:
+                from piper import PiperVoice
+                self._piper_voice = PiperVoice.load(str(model))
+            with wave.open(str(output), "wb") as wav_file:
+                self._piper_voice.synthesize_wav(text, wav_file)
 
     def warm_up(self) -> None:
         """Carga DaveFX al iniciar para que la primera tarjeta responda al instante."""
