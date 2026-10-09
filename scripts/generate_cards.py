@@ -58,6 +58,43 @@ def planet_photo(card, draw, image_key, name, color, index):
     card.paste(source, (370, 390), mask)
     draw.ellipse((370, 390, 830, 850), outline=color, width=7)
 
+def qr_signature(draw, name, qr_id, color, index):
+    """Añade una firma humana, sin invadir la zona silenciosa del QR.
+
+    El QR mantiene siempre tinta oscura sobre blanco: los patrones se sitúan
+    alrededor de su tarjeta y sirven para reconocerla de un vistazo y orientar
+    a quien la muestra a la cámara.
+    """
+    # Banda identificativa y marco cromático propios de cada astro.
+    draw.rounded_rectangle((300, 1038, 900, 1078), 18, fill=color)
+    centered(draw, f"FIRMA VISUAL · {name.upper()}", 1047, font(17, True), "#071227")
+    draw.rounded_rectangle((288, 1073, 912, 1607), 42, outline=color, width=8)
+
+    # Cuatro familias de patrones, escogidas de forma estable por planeta.
+    # Están fuera del propio QR y de sus márgenes blancos obligatorios.
+    style = index % 4
+    if style == 0:  # órbitas: nodos redondos
+        for x, y in ((275, 1125), (925, 1190), (275, 1490), (925, 1550)):
+            draw.ellipse((x-14, y-14, x+14, y+14), fill=color, outline="#f4f8ff", width=3)
+    elif style == 1:  # cometas: pequeñas estelas diagonales
+        for x, y, direction in ((270, 1140, 1), (930, 1215, -1), (270, 1525, 1), (930, 1450, -1)):
+            draw.line((x, y, x + 32 * direction, y - 22), fill=color, width=9)
+            draw.ellipse((x-7, y-7, x+7, y+7), fill="#f4f8ff", outline=color, width=3)
+    elif style == 2:  # constelación: cuadrados y líneas discontinuas
+        for x, y in ((274, 1130), (925, 1130), (274, 1535), (925, 1535)):
+            draw.rounded_rectangle((x-13, y-13, x+13, y+13), 5, fill=color, outline="#f4f8ff", width=3)
+        for y in (1220, 1415):
+            draw.line((252, y, 282, y), fill=color, width=6)
+            draw.line((918, y, 948, y), fill=color, width=6)
+    else:  # asteroides: triángulos con orientación alterna
+        for x, y, up in ((274, 1140, True), (926, 1190, False), (274, 1510, False), (926, 1550, True)):
+            points = [(x, y-16), (x-15, y+14), (x+15, y+14)] if up else [(x, y+16), (x-15, y-14), (x+15, y-14)]
+            draw.polygon(points, fill=color, outline="#f4f8ff")
+
+    # Un identificador textual visible, útil si las tarjetas se mezclan.
+    draw.rounded_rectangle((405, 1605, 795, 1654), 20, fill="#071227", outline=color, width=3)
+    centered(draw, f"{qr_id} · PATRÓN {style + 1}", 1618, font(17, True), "#f4f8ff")
+
 items = json.loads((ROOT / "data" / "objects.json").read_text(encoding="utf-8"))
 items.extend([{"name":"Más información","qr_id":"MAS_001"},{"name":"Otro planeta","qr_id":"OTRA_001"}])
 for item in items:
@@ -79,6 +116,7 @@ for item in items:
     centered(draw,"MUESTRA ESTA TARJETA A REACHY" if qr_id not in {"MAS_001","OTRA_001"} else "RESPUESTA PARA REACHY",997,font(24,True),"#bcd0ff")
     qr = qrcode.QRCode(error_correction=qrcode.constants.ERROR_CORRECT_H, box_size=12, border=4); qr.add_data(qr_id); qr.make(fit=True)
     qr_image = qr.make_image(fill_color="#071227",back_color="white").convert("RGBA"); qr_image.thumbnail((490,490),Image.Resampling.LANCZOS)
+    qr_signature(draw, name, qr_id, PALETTES[name], items.index(item))
     draw.rounded_rectangle((300,1085,900,1595),34,fill="white",outline="#cadbff",width=7); card.alpha_composite(qr_image,((SIZE[0]-qr_image.width)//2,1100))
-    centered(draw,qr_id,1615,font(27,True),"#d8e5ff"); card.convert("RGB").save(OUT/f"{qr_id}.png",dpi=(300,300))
+    card.convert("RGB").save(OUT/f"{qr_id}.png",dpi=(300,300))
 print(f"{len(items)} tarjetas Astro Reachy creadas en {OUT}")
