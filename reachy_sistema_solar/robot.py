@@ -93,15 +93,26 @@ class GesturePlayer:
         self.reachy = reachy
         self.moves: Any | None = None
         self._last_started = 0.0
+        self._moves_lock = threading.Lock()
+        # La primera descarga puede tardar con Wi‑Fi. No retrasa nunca el
+        # lector de tarjetas: mientras llega, Reachy simplemente habla sin
+        # gesticular y se incorporan los gestos cuando ya estén disponibles.
+        threading.Thread(target=self._load_moves, name="astro-gestures-load", daemon=True).start()
+
+    def _load_moves(self) -> None:
         try:
             from reachy_mini.motion.recorded_move import RecordedMoves
-            self.moves = RecordedMoves("pollen-robotics/reachy-mini-emotions-library")
+            moves = RecordedMoves("pollen-robotics/reachy-mini-emotions-library")
+            with self._moves_lock:
+                self.moves = moves
             LOGGER.info("[MOTION] Biblioteca oficial de emociones disponible")
         except Exception as error:
             LOGGER.warning("[MOTION] Gestos oficiales no disponibles; se omitirá movimiento: %s", error)
 
     def play(self, gesture: str) -> None:
-        if not self.moves:
+        with self._moves_lock:
+            moves = self.moves
+        if not moves:
             return
         # Nunca solapar coreografías: el daemon rechaza objetivos simultáneos
         # y el resultado visual parece un espasmo.
@@ -110,7 +121,7 @@ class GesturePlayer:
         try:
             name = self._MAP.get(gesture, "happy")
             self._last_started = time.monotonic()
-            self.reachy.play_move(self.moves.get(name), initial_goto_duration=1.0)
+            self.reachy.play_move(moves.get(name), initial_goto_duration=1.0)
         except Exception as error:
             LOGGER.warning("[MOTION] Gesto omitido: %s", error)
 
