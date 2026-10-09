@@ -112,7 +112,7 @@ class GesturePlayer:
 
     def play(self, gesture: str) -> None:
         # Nunca solapar movimientos: el daemon rechaza objetivos simultáneos.
-        if time.monotonic() - self._last_started < 6.0:
+        if time.monotonic() - self._last_started < 4.8:
             return
         try:
             target = self._MAP.get(gesture, self._MAP["atento"])
@@ -140,8 +140,8 @@ class GesturePlayer:
         return thread
 
     def play_sequence(self, gestures: list[str], speech_duration: float) -> threading.Thread:
-        """Reparte hasta tres movimientos seguros durante una explicación."""
-        selected = [gestures[i] for i in range(0, len(gestures), 2)][:3]
+        """Reparte los gestos narrativos durante toda la explicación."""
+        selected = gestures[:5]
 
         def run() -> None:
             if not selected:
@@ -149,7 +149,7 @@ class GesturePlayer:
             # Deja que se oiga claramente la frase de descubrimiento antes
             # del primer gesto, pero aún sucede durante la explicación.
             time.sleep(min(3.0, speech_duration / 5.0))
-            interval = max(6.5, speech_duration / (len(selected) + 0.5))
+            interval = max(5.2, speech_duration / (len(selected) + 0.5))
             for index, gesture in enumerate(selected):
                 if index:
                     time.sleep(interval)
