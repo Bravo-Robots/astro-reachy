@@ -28,6 +28,14 @@ class ReachySistemaSolar(ReachyMiniApp):
         repo = SolarRepository(DATABASE_FILE, DATA_FILE)
         state, latched_qr, missing_frames, active_body = AppState.BOOT, None, 0, None
         try:
+            # Una app iniciada desde el dashboard no despierta los motores por
+            # sí sola. Astro Reachy debe estar listo para recibir una tarjeta
+            # sin exigir un paso manual adicional al visitante.
+            try:
+                reachy_mini.enable_motors()
+                reachy_mini.wake_up()
+            except Exception as error:
+                LOGGER.warning("[ROBOT] No se pudo ejecutar el despertar automático: %s", error)
             repo.initialise()
             vision = QRVision(reachy_mini)
             voice = DaveFXVoice(reachy_mini, settings)
