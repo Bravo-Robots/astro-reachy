@@ -14,19 +14,19 @@ class Presenter:
         self.voice, self.gestures = voice, gestures
 
     def _capsule(self, blocks: list[dict[str, str]], closing: str) -> None:
-        """Sintetiza una sola cápsula para evitar tres cargas DaveFX seguidas."""
+        """Una cápsula continua con movimientos repartidos durante la voz."""
         if not blocks:
             return
         LOGGER.info("[VOICE] Reproduciendo cápsula: %s", ", ".join(block["id"] for block in blocks))
         text = " ".join(block["text"] for block in blocks) + " " + closing
-        self.voice.speak(text, on_playback_start=lambda: self.gestures.play_concurrently(blocks[0]["gesture"]))
+        gestures = [block["gesture"] for block in blocks]
+        self.voice.speak(text, on_playback_start=lambda duration: self.gestures.play_sequence(gestures, duration))
 
     def present_discovery(self, body: dict[str, Any]) -> None:
-        """Primera cápsula: breve, dinámica y suficiente para despertar curiosidad."""
+        """Cinco datos esenciales, seguidos de espera para otra tarjeta."""
         LOGGER.info("[PRESENTATION] Descubrimiento de %s", body["name"])
-        self._capsule(body["narration"][:3],
-            f"¡Qué gran descubrimiento, explorador! Ya conocemos lo esencial de {body['name']}. "
-            "¿Quieres saber más? Cuando termine de hablar, responde sí o no."
+        self._capsule(body["narration"][:5],
+            f"Misión sobre {body['name']} completada. Cuando quieras, enséñame otra tarjeta para descubrir otro mundo."
         )
 
     def present_more(self, body: dict[str, Any]) -> None:
