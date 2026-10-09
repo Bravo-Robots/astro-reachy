@@ -13,23 +13,18 @@ class Presenter:
     def __init__(self, voice: DaveFXVoice, gestures: GesturePlayer) -> None:
         self.voice, self.gestures = voice, gestures
 
-    def _speak_blocks(self, body: dict[str, Any], blocks: list[dict[str, str]]) -> None:
-        for index, block in enumerate(blocks):
-            LOGGER.info("[VOICE] Reproduciendo bloque: %s", block["id"])
-            # Una sola coreografía por cápsula. Antes se lanzaban varias en
-            # paralelo si el audio no estaba disponible, provocando órdenes
-            # de motor incompatibles.
-            spoken = self.voice.speak(block["text"])
-            # La voz sintetiza antes de comenzar el movimiento, para que el
-            # gesto acompañe al sonido real y nunca a un silencio de carga.
-            if index == 0 and spoken:
-                self.gestures.play(block["gesture"])
+    def _capsule(self, blocks: list[dict[str, str]], closing: str) -> None:
+        """Sintetiza una sola cápsula para evitar tres cargas DaveFX seguidas."""
+        if not blocks:
+            return
+        LOGGER.info("[VOICE] Reproduciendo cápsula: %s", ", ".join(block["id"] for block in blocks))
+        text = " ".join(block["text"] for block in blocks) + " " + closing
+        self.voice.speak(text, on_playback_start=lambda: self.gestures.play_concurrently(blocks[0]["gesture"]))
 
     def present_discovery(self, body: dict[str, Any]) -> None:
         """Primera cápsula: breve, dinámica y suficiente para despertar curiosidad."""
         LOGGER.info("[PRESENTATION] Descubrimiento de %s", body["name"])
-        self._speak_blocks(body, body["narration"][:3])
-        self.voice.speak(
+        self._capsule(body["narration"][:3],
             f"¡Qué gran descubrimiento, explorador! Ya conocemos lo esencial de {body['name']}. "
             "¿Quieres saber más? Cuando termine de hablar, responde sí o no."
         )
@@ -37,7 +32,9 @@ class Presenter:
     def present_more(self, body: dict[str, Any]) -> None:
         """Segunda cápsula: profundiza solo cuando el visitante lo pide."""
         LOGGER.info("[PRESENTATION] Ampliación de %s", body["name"])
-        self.voice.speak(f"¡Excelente elección! Abrimos el cuaderno estelar de {body['name']}.")
-        self._speak_blocks(body, body["narration"][3:6])
-        self.voice.speak("Misión completada. Enséñame otra tarjeta cuando quieras seguir viajando.")
+        self._capsule(
+            body["narration"][3:6],
+            f"¡Excelente elección! Hemos abierto el cuaderno estelar de {body['name']}. "
+            "Misión completada. Enséñame otra tarjeta cuando quieras seguir viajando.",
+        )
         LOGGER.info("[PRESENTATION] Finalizada")

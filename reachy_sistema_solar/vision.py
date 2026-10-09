@@ -4,6 +4,8 @@ from __future__ import annotations
 import logging
 from typing import Any
 
+import numpy as np
+
 LOGGER = logging.getLogger("reachy_sistema_solar")
 
 
@@ -30,13 +32,25 @@ class QRVision:
         stride = max(1, (max(height, width) + 479) // 480)
         return frame[::stride, ::stride]
 
+    @staticmethod
+    def _lift_dark_frame(frame: Any) -> Any:
+        """Da margen al QR en sombra sin alterar un fotograma bien expuesto."""
+        mean_luma = float(np.asarray(frame).mean())
+        if mean_luma >= 82:
+            return frame
+        # Sólo amplificamos sombras moderadas: con oscuridad absoluta no se
+        # inventan detalles, por lo que la iluminación frontal sigue siendo
+        # imprescindible para una lectura fiable.
+        gain = 2 if mean_luma >= 38 else 3
+        return np.minimum(np.asarray(frame, dtype=np.uint16) * gain, 255).astype(np.uint8)
+
     def read_qr(self) -> str | None:
         """Lee un frame BGR desde la cámara gestionada por el SDK oficial."""
         try:
             frame = self.reachy.media.get_frame()
             if frame is None:
                 return None
-            frame = self._scan_sized(frame)
+            frame = self._lift_dark_frame(self._scan_sized(frame))
             # La vía rápida se ejecuta en cada fotograma. La más costosa sólo
             # cada cuatro fallos: así no bloquea ni retrasa la cámara mientras
             # no hay tarjeta, pero mantiene tolerancia al desenfoque moderado.

@@ -7,7 +7,7 @@ import subprocess
 import tempfile
 import threading
 import time
-from typing import Any
+from typing import Any, Callable
 
 from .core import Settings
 
@@ -32,7 +32,7 @@ class DaveFXVoice:
         """Compatibilidad: no precargamos ONNX para no frenar cámara ni gestos."""
         return
 
-    def speak(self, text: str) -> bool:
+    def speak(self, text: str, on_playback_start: Callable[[], None] | None = None) -> bool:
         model = Path(self.settings.davefx_model)
         output = Path(tempfile.mkstemp(prefix="reachy-solar-", suffix=".wav")[1])
         try:
@@ -50,6 +50,10 @@ class DaveFXVoice:
                 if result.returncode:
                     LOGGER.error("[VOICE] eSpeak NG falló: %s", result.stderr.strip())
                     return False
+            # Arranca el gesto justo antes de reproducir: así acompaña a la
+            # voz (no llega después de que termine de hablar).
+            if on_playback_start is not None:
+                on_playback_start()
             # API oficial: el media manager reproduce un fichero wav local.
             self.reachy.media.play_sound(str(output))
             return True
