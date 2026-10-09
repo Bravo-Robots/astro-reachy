@@ -10,7 +10,7 @@ readme = "README.md"
 requires-python = ">=3.10,<3.13"
 dependencies = [
     "reachy-mini>=1.8,<2",
-    "opencv-python-headless>=4.8,<5",
+    "zxing-cpp>=3.1,<4",
     "SpeechRecognition>=3.10,<4",
 ]
 

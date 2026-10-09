@@ -10,12 +10,11 @@ LOGGER = logging.getLogger("reachy_sistema_solar")
 class QRVision:
     def __init__(self, reachy: Any) -> None:
         try:
-            import cv2
+            import zxingcpp
         except ImportError as error:  # La app informa y sigue viva, no aborta el dashboard.
-            raise RuntimeError("OpenCV no está instalado en el entorno de apps") from error
-        self.cv2 = cv2
+            raise RuntimeError("El lector QR no está instalado en el entorno de apps") from error
+        self.zxingcpp = zxingcpp
         self.reachy = reachy
-        self.detector = cv2.QRCodeDetector()
 
     def read_qr(self) -> str | None:
         """Lee un frame BGR desde la cámara gestionada por el SDK oficial."""
@@ -23,8 +22,12 @@ class QRVision:
             frame = self.reachy.media.get_frame()
             if frame is None:
                 return None
-            value, _, _ = self.detector.detectAndDecode(frame)
-            return value.strip() or None
+            codes = self.zxingcpp.read_barcodes(frame)
+            for code in codes:
+                value = code.text.strip()
+                if value:
+                    return value
+            return None
         except Exception as error:
             LOGGER.warning("[CAMERA] Frame/QR no disponible: %s", error)
             return None

@@ -19,7 +19,7 @@ tarjetas QR físicas.
 
 ## Qué hace
 
-Al mostrar una tarjeta física, la cámara de Reachy detecta su QR con OpenCV.
+Al mostrar una tarjeta física, la cámara de Reachy detecta su QR con un lector compacto integrado.
 El QR solo contiene un identificador; la app recupera el objeto y sus bloques
 educativos desde SQLite, habla con Piper/DaveFX y ejecuta gestos oficiales de
 Reachy cuando estén disponibles. Primero comparte una cápsula de descubrimiento
@@ -77,7 +77,7 @@ error y continúa escaneando sin cerrar la aplicación.
 
 ## Instalación y comprobación en Reachy Mini
 
-Instala OpenCV en el entorno de aplicaciones de Reachy junto con el proyecto.
+Instala un lector QR compacto en el entorno de aplicaciones de Reachy junto con el proyecto.
 Después, desde la carpeta de la app:
 
 ```bash
