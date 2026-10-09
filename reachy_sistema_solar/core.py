@@ -34,7 +34,7 @@ class AppState(str, Enum):
 class Settings:
     scan_fps: float = float(os.getenv("SOLAR_SCAN_FPS", "8"))
     removal_frames: int = int(os.getenv("SOLAR_REMOVAL_FRAMES", "12"))
-    piper_bin: str = os.getenv("DAVEFX_PIPER_BIN", "piper")
+    piper_bin: str = os.getenv("DAVEFX_PIPER_BIN", str(Path(sys.executable).parent / "piper"))
     davefx_model: str = os.getenv("DAVEFX_MODEL", "/opt/reachy/voices/es_ES-davefx-medium.onnx")
     espeak_bin: str = os.getenv("SOLAR_ESPEAK_BIN", "espeak-ng")
     espeak_voice: str = os.getenv("SOLAR_ESPEAK_VOICE", "es")

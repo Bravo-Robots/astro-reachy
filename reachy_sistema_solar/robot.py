@@ -8,6 +8,7 @@ import tempfile
 import threading
 import time
 from typing import Any
+import wave
 
 from .core import Settings
 
@@ -18,16 +19,22 @@ class DaveFXVoice:
     """Sintetiza localmente con Piper y reproduce mediante el media manager de Reachy."""
     def __init__(self, reachy: Any, settings: Settings) -> None:
         self.reachy, self.settings = reachy, settings
+        self._piper_voice: Any | None = None
+
+    def _synthesise_davefx(self, text: str, output: Path, model: Path) -> None:
+        """Mantiene DaveFX cargado para no pagar su arranque en cada frase."""
+        if self._piper_voice is None:
+            from piper import PiperVoice
+            self._piper_voice = PiperVoice.load(str(model))
+        with wave.open(str(output), "wb") as wav_file:
+            self._piper_voice.synthesize_wav(text, wav_file)
 
     def speak(self, text: str) -> bool:
         model = Path(self.settings.davefx_model)
         output = Path(tempfile.mkstemp(prefix="reachy-solar-", suffix=".wav")[1])
         try:
             if model.is_file():
-                result = subprocess.run(
-                    [self.settings.piper_bin, "--model", str(model), "--output_file", str(output)],
-                    input=text, text=True, encoding="utf-8", capture_output=True, timeout=45, check=False,
-                )
+                self._synthesise_davefx(text, output, model)
             else:
                 # El Wireless no trae el modelo DaveFX de fábrica. eSpeak NG
                 # está disponible en su sistema y mantiene la experiencia
@@ -37,13 +44,13 @@ class DaveFXVoice:
                     [self.settings.espeak_bin, "-v", self.settings.espeak_voice, "-s", "155", "-w", str(output), text],
                     text=True, encoding="utf-8", capture_output=True, timeout=45, check=False,
                 )
-            if result.returncode:
-                LOGGER.error("[VOICE] Piper falló: %s", result.stderr.strip())
-                return False
+                if result.returncode:
+                    LOGGER.error("[VOICE] eSpeak NG falló: %s", result.stderr.strip())
+                    return False
             # API oficial: el media manager reproduce un fichero wav local.
             self.reachy.media.play_sound(str(output))
             return True
-        except (OSError, subprocess.SubprocessError) as error:
+        except Exception as error:
             LOGGER.exception("[VOICE] No se pudo reproducir DaveFX: %s", error)
             return False
         finally:

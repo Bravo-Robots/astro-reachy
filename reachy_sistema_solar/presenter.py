@@ -19,9 +19,11 @@ class Presenter:
             # Una sola coreografía por cápsula. Antes se lanzaban varias en
             # paralelo si el audio no estaba disponible, provocando órdenes
             # de motor incompatibles.
-            if index == 0:
+            spoken = self.voice.speak(block["text"])
+            # La voz sintetiza antes de comenzar el movimiento, para que el
+            # gesto acompañe al sonido real y nunca a un silencio de carga.
+            if index == 0 and spoken:
                 self.gestures.play(block["gesture"])
-            self.voice.speak(block["text"])
 
     def present_discovery(self, body: dict[str, Any]) -> None:
         """Primera cápsula: breve, dinámica y suficiente para despertar curiosidad."""
