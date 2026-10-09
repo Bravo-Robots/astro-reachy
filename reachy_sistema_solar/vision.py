@@ -15,6 +15,20 @@ class QRVision:
             raise RuntimeError("El lector QR no está instalado en el entorno de apps") from error
         self.zxingcpp = zxingcpp
         self.reachy = reachy
+        self._consecutive_misses = 0
+
+    @staticmethod
+    def _scan_sized(frame: Any) -> Any:
+        """Reduce sólo para el análisis, nunca la cámara del dashboard.
+
+        El stream IMX708 es mucho mayor de lo necesario para un QR impreso.
+        Usar un muestreo de hasta 720 px de lado evita que la CPU de la
+        Raspberry acumule frames obsoletos y conserva módulos suficientes
+        para los QR de las tarjetas Astro Reachy.
+        """
+        height, width = frame.shape[:2]
+        stride = max(1, (max(height, width) + 719) // 720)
+        return frame[::stride, ::stride]
 
     def read_qr(self) -> str | None:
         """Lee un frame BGR desde la cámara gestionada por el SDK oficial."""
@@ -22,25 +36,28 @@ class QRVision:
             frame = self.reachy.media.get_frame()
             if frame is None:
                 return None
-            # Limitamos la búsqueda a QR y probamos dos binarizaciones. Esto
-            # mantiene una lectura ágil pero tolera compresión, poco contraste
-            # y un desenfoque moderado en la transmisión de la cámara.
-            for binarizer in (
-                self.zxingcpp.Binarizer.LocalAverage,
-                self.zxingcpp.Binarizer.GlobalHistogram,
-            ):
+            frame = self._scan_sized(frame)
+            # La vía rápida se ejecuta en cada fotograma. La más costosa sólo
+            # cada cuatro fallos: así no bloquea ni retrasa la cámara mientras
+            # no hay tarjeta, pero mantiene tolerancia al desenfoque moderado.
+            binarizers = [self.zxingcpp.Binarizer.LocalAverage]
+            if self._consecutive_misses % 4 == 3:
+                binarizers.append(self.zxingcpp.Binarizer.GlobalHistogram)
+            for binarizer in binarizers:
                 codes = self.zxingcpp.read_barcodes(
                     frame,
                     formats=self.zxingcpp.BarcodeFormat.QRCode,
                     try_rotate=True,
                     try_downscale=True,
-                    try_invert=True,
+                    try_invert=False,
                     binarizer=binarizer,
                 )
                 for code in codes:
                     value = code.text.strip()
                     if value:
+                        self._consecutive_misses = 0
                         return value
+            self._consecutive_misses += 1
             return None
         except Exception as error:
             LOGGER.warning("[CAMERA] Frame/QR no disponible: %s", error)

@@ -32,7 +32,9 @@ class AppState(str, Enum):
 
 @dataclass(frozen=True)
 class Settings:
-    scan_fps: float = float(os.getenv("SOLAR_SCAN_FPS", "8"))
+    # En la Raspberry del Mini, cinco muestras nuevas por segundo bastan para
+    # una tarjeta que se presenta a mano y evitan crear cola de vídeo.
+    scan_fps: float = float(os.getenv("SOLAR_SCAN_FPS", "5"))
     removal_frames: int = int(os.getenv("SOLAR_REMOVAL_FRAMES", "12"))
     piper_bin: str = os.getenv("DAVEFX_PIPER_BIN", str(Path(sys.executable).parent / "piper"))
     davefx_model: str = os.getenv("DAVEFX_MODEL", "/opt/reachy/voices/es_ES-davefx-medium.onnx")
