@@ -2,14 +2,12 @@
 from __future__ import annotations
 
 import logging
-import os
 from pathlib import Path
 import subprocess
 import tempfile
 import threading
 import time
 from typing import Any
-import wave
 
 from .core import Settings
 
@@ -20,33 +18,19 @@ class DaveFXVoice:
     """Sintetiza localmente con Piper y reproduce mediante el media manager de Reachy."""
     def __init__(self, reachy: Any, settings: Settings) -> None:
         self.reachy, self.settings = reachy, settings
-        self._piper_voice: Any | None = None
-        self._piper_lock = threading.Lock()
 
     def _synthesise_davefx(self, text: str, output: Path, model: Path) -> None:
-        """Mantiene DaveFX cargado para no pagar su arranque en cada frase."""
-        # La precarga ocurre en segundo plano; el candado evita abrir dos
-        # sesiones ONNX si se presenta una tarjeta durante ella.
-        with self._piper_lock:
-            if self._piper_voice is None:
-                from piper import PiperVoice
-                self._piper_voice = PiperVoice.load(str(model))
-            with wave.open(str(output), "wb") as wav_file:
-                self._piper_voice.synthesize_wav(text, wav_file)
+        """Genera DaveFX en un proceso corto, aislado del vídeo del robot."""
+        result = subprocess.run(
+            [self.settings.piper_bin, "--model", str(model), "--output_file", str(output)],
+            input=text, text=True, encoding="utf-8", capture_output=True, timeout=45, check=False,
+        )
+        if result.returncode:
+            raise RuntimeError(result.stderr.strip() or "Piper no pudo sintetizar DaveFX")
 
     def warm_up(self) -> None:
-        """Carga DaveFX al iniciar para que la primera tarjeta responda al instante."""
-        model = Path(self.settings.davefx_model)
-        if not model.is_file():
-            return
-        descriptor, path = tempfile.mkstemp(suffix=".wav")
-        os.close(descriptor)
-        try:
-            self._synthesise_davefx("Listo.", Path(path), model)
-        except Exception as error:
-            LOGGER.warning("[VOICE] No se pudo precargar DaveFX: %s", error)
-        finally:
-            Path(path).unlink(missing_ok=True)
+        """Compatibilidad: no precargamos ONNX para no frenar cámara ni gestos."""
+        return
 
     def speak(self, text: str) -> bool:
         model = Path(self.settings.davefx_model)

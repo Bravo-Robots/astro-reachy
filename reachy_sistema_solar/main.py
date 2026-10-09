@@ -31,10 +31,6 @@ class ReachySistemaSolar(ReachyMiniApp):
             repo.initialise()
             vision = QRVision(reachy_mini)
             voice = DaveFXVoice(reachy_mini, settings)
-            # Cargar ONNX puede tardar unos segundos en el Wireless. No se
-            # bloquea la cámara ni parece que la app se haya quedado colgada:
-            # la voz se prepara mientras Reachy ya muestra "listo".
-            threading.Thread(target=voice.warm_up, name="astro-davefx-warmup", daemon=True).start()
             presenter = Presenter(voice, GesturePlayer(reachy_mini))
             listener = YesNoListener(reachy_mini, settings)
             state = AppState.SCANNING
